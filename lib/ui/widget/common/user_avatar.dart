@@ -23,9 +23,6 @@ class UserCircleAvatar extends StatelessWidget {
     if (imageUrl != null) {
       return NetworkImage(imageUrl!);
     }
-    if (FirebaseAuth.instance.currentUser?.photoURL != null) {
-      return NetworkImage(FirebaseAuth.instance.currentUser!.photoURL!);
-    }
     return const AssetImage("assets/images/user.png");
   }
 

@@ -34,7 +34,7 @@ class ContactItem extends StatelessWidget {
       },
       leading: UserCircleAvatar(imageUrl: contact.photoUrl),
       title: Text(
-        contact.displayName ?? contact.uid ?? "User",
+        contact.displayName,
         style: const TextStyle(color: Colors.white),
       ),
       subtitle: Text(

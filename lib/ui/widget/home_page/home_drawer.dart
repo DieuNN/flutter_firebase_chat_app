@@ -55,14 +55,17 @@ class HomeDrawer extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const UserCircleAvatar(),
+                    UserCircleAvatar(
+                      imageUrl: FirebaseAuth.instance.currentUser?.photoURL,
+                    ),
                     const SizedBox(
                       width: 8,
                     ),
                     Text(
                       FirebaseAuth.instance.currentUser!.displayName
-                              ?.trim()
-                              .isEmpty ?? "".isEmpty
+                                  ?.trim()
+                                  .isEmpty ??
+                              "".isEmpty
                           ? FirebaseAuth.instance.currentUser!.uid
                           : FirebaseAuth.instance.currentUser!.displayName!,
                       overflow: TextOverflow.ellipsis,

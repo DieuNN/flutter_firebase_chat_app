@@ -15,15 +15,18 @@ part 'contact_state.dart';
 class ContactBloc extends Bloc<ContactEvent, ContactState> {
   ContactBloc() : super(ContactInitial()) {
     on<ContactEvent>((event, emit) {});
-    on<ContactInitialEvent>((event, emit) {});
+    on<ContactInitialEvent>((event, emit) {
+      log("Contact initial");
+      emit(ContactInitial());
+    });
     on<LoadContactsEvent>((event, emit) async {
       emit(LoadContactsInProgressState());
       try {
+        log("Contact loading");
         final uid = auth.FirebaseAuth.instance.currentUser!.uid;
         final contacts = await cloud.FirebaseFirestore().getUserContacts(uid);
-        for (var element in contacts) {
-        }
         emit(LoadContactsSuccessState(contacts: contacts));
+        log("Contact loaded");
       } catch (e) {
         log(e.toString());
         emit(LoadContactsFailureState(errorMessage: e.toString()));
@@ -31,11 +34,11 @@ class ContactBloc extends Bloc<ContactEvent, ContactState> {
     });
     on<SearchContactEvent>((event, emit) async {
       emit(ContactSearchInProgressState());
+      log("Searching contacts: ");
       try {
         final result = await cloud.FirebaseFirestore()
             .findContact(contactEmail: event.keyword);
-        emit(ContactSearchSuccessState(contacts: result));
-        log(result.length.toString());
+        emit(ContactSearchSuccessState(user: result));
       } catch (e) {
         log(e.toString());
         emit(ContactSearchErrorState(errorMessage: e.toString()));

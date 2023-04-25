@@ -1,12 +1,9 @@
-
 import 'package:chat_app/constants/app_constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final GlobalKey<ScaffoldState> scaffoldKey;
-
-  const HomeAppBar({super.key, required this.scaffoldKey});
+  const HomeAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +12,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: false,
       backgroundColor: AppConstants.primaryColor,
       title: Text(
-        "Hello, ${FirebaseAuth.instance.currentUser?.displayName ?? FirebaseAuth.instance.currentUser?.uid}",
+        "Hello, ${FirebaseAuth.instance.currentUser?.displayName}",
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(color: Colors.white),
       ),

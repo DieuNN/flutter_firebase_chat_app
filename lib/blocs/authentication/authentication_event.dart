@@ -18,8 +18,9 @@ class StartSignOutEvent extends AuthenticationEvent {}
 class StartCreateAccountEvent extends AuthenticationEvent {
   final String email;
   final String password;
+  final String name;
 
-  StartCreateAccountEvent({required this.email, required this.password});
+  StartCreateAccountEvent({required this.email, required this.password, required this.name});
 }
 
 class StartUpdateAccountEvent extends AuthenticationEvent {

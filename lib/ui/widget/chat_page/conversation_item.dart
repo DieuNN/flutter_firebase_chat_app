@@ -13,6 +13,9 @@ class ConversationItem extends StatelessWidget {
   String _getMessageTime(Timestamp time) {
     final now = Timestamp.now().millisecondsSinceEpoch;
     final diff = now - time.millisecondsSinceEpoch;
+    if (Duration(milliseconds: diff).inSeconds < 10) {
+      return "Just now";
+    }
     if (Duration(milliseconds: diff).inSeconds < Duration.secondsPerMinute) {
       return "${diff}s ago";
     }

@@ -6,8 +6,6 @@ import 'package:chat_app/blocs/contact/contact_bloc.dart';
 import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
 import 'package:chat_app/blocs/message/message_bloc.dart';
 import 'package:chat_app/blocs/pages/page_bloc.dart';
-import 'package:chat_app/model/entity/conversation.dart';
-import 'package:chat_app/model/entity/message_content.dart';
 import 'package:chat_app/network/firebase_firestore.dart';
 import 'package:chat_app/ui/page/add_contact_page.dart';
 import 'package:chat_app/ui/page/message_page.dart';
@@ -15,7 +13,6 @@ import 'package:chat_app/ui/page/home_page.dart';
 import 'package:chat_app/ui/page/login_page.dart';
 import 'package:chat_app/ui/page/sign_up_page.dart';
 import 'package:chat_app/utils/animated_route.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,17 +22,14 @@ void main() async {
   var binding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: binding);
   await Firebase.initializeApp();
-  await FirebaseFirestore().subscribeToConversation(
-      "EgXaC5PQNvYAAoXorPXgOW8CLrH2",
-      "o9B3I321WwVE9VUuE4ANcQn9LUE2",
-      "ctgDSgQFTSY8LjezgqKv");
-  runApp(const MyApp());
+  await FirebaseFirestore()
+      .getConversations(uid: "EgXaC5PQNvYAAoXorPXgOW8CLrH2");
+  runApp(const ChatApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ChatApp extends StatelessWidget {
+  const ChatApp({super.key});
 
-// This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -86,7 +80,7 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               onGenerateRoute: (settings) {
                 if (settings.name == "/") {
-                  return AnimatedRoute.createSlidingUpRoute(const HomePage());
+                  return AnimatedRoute.createSlidingUpRoute(HomePage());
                 }
                 if (settings.name == "/login") {
                   return AnimatedRoute.createSlidingUpRoute(const LoginPage());
@@ -109,7 +103,7 @@ class MyApp extends StatelessWidget {
                   );
                 }
                 // Unknown route
-                return AnimatedRoute.createSlidingUpRoute(const HomePage());
+                return AnimatedRoute.createSlidingUpRoute(HomePage());
               },
             );
           }

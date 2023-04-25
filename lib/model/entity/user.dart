@@ -3,7 +3,7 @@ class User {
   final String email;
   final String uid;
   final String? fcmToken;
-  final String? displayName;
+  final String displayName;
   final String? photoUrl;
   final List<dynamic>? groups;
   final List<dynamic>? contacts;
@@ -15,7 +15,7 @@ class User {
     required this.email,
     required this.uid,
     this.fcmToken,
-    this.displayName,
+    required this.displayName,
     this.photoUrl,
   });
 

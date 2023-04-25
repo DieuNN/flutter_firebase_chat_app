@@ -27,10 +27,15 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
     progressDialog = sn_dialog.ProgressDialog(
       context: context,
     );
-    super.initState();
+    super.didChangeDependencies();
   }
 
   @override
@@ -43,7 +48,6 @@ class _LoginPageState extends State<LoginPage> {
             msg: "Signing in ...",
             msgColor: Colors.white,
           );
-
         }
         if (state is SignInSuccessState) {
           progressDialog.close();
@@ -61,6 +65,7 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: AppConstants.primaryColor,
         resizeToAvoidBottomInset: true,
         body: ListView(
+          physics: const ClampingScrollPhysics(),
           children: [
             // total flex 14
             const SizedBox(
@@ -169,6 +174,7 @@ class _LoginPageState extends State<LoginPage> {
         controller: _emailController,
         hintText: "Email",
         shouldValidator: true,
+        shouldShowContent: true,
       ),
     );
   }
@@ -181,6 +187,7 @@ class _LoginPageState extends State<LoginPage> {
         controller: _passwordController,
         isPassword: true,
         hintText: "Password",
+        shouldShowContent: shouldShowPassword,
         suffixIcon: IconButton(
           onPressed: () {
             setState(() {

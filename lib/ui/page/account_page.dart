@@ -88,14 +88,14 @@ class _AccountPageState extends State<AccountPage> {
       },
       child: ListView(
         children: [
-          _buildAvatarPicker(),
-          _buildChangeInfoForm(),
+          buildAvatarPicker(),
+          buildChangeInfoForm(),
         ],
       ),
     );
   }
 
-  _buildChangeInfoForm() {
+  buildChangeInfoForm() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Form(
@@ -106,7 +106,7 @@ class _AccountPageState extends State<AccountPage> {
               shouldValidator: false,
               hintText: "Name",
               controller: nameController,
-              decoration: _getChangeInfoFormDecoration("Name"),
+              decoration: getChangeInfoFormDecoration("Name"),
             ),
             const SizedBox(
               height: 16,
@@ -115,16 +115,17 @@ class _AccountPageState extends State<AccountPage> {
               shouldValidator: true,
               hintText: "Email",
               controller: emailController,
-              decoration: _getChangeInfoFormDecoration("Email"),
+              decoration: getChangeInfoFormDecoration("Email"),
             ),
             const SizedBox(
               height: 16,
             ),
             FormInputField(
               shouldValidator: true,
+              shouldShowContent: showPassword,
               hintText: "Password",
               controller: passwordController,
-              decoration: _getChangeInfoFormDecoration(
+              decoration: getChangeInfoFormDecoration(
                 "Password",
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -144,9 +145,10 @@ class _AccountPageState extends State<AccountPage> {
             ),
             FormInputField(
               shouldValidator: true,
+              shouldShowContent: showConfirmPassword,
               hintText: "Confirm Password",
               controller: confirmPasswordController,
-              decoration: _getChangeInfoFormDecoration(
+              decoration: getChangeInfoFormDecoration(
                 "Confirm Password",
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -165,7 +167,7 @@ class _AccountPageState extends State<AccountPage> {
               height: 16,
             ),
             ElevatedButton(
-              onPressed: _validateForm,
+              onPressed: validateForm,
               child: const Text("Update info"),
             ),
           ],
@@ -174,7 +176,7 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  _getChangeInfoFormDecoration(String hint, {IconButton? suffixIcon}) {
+  getChangeInfoFormDecoration(String hint, {IconButton? suffixIcon}) {
     return InputDecoration(
       hintStyle: const TextStyle(
         color: Colors.white,
@@ -201,12 +203,13 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  _buildAvatarPicker() {
+  buildAvatarPicker() {
     return Center(
       child: Stack(
         children: [
           UserCircleAvatar(
             imageFile: imageFile,
+            imageUrl: FirebaseAuth.instance.currentUser?.photoURL,
             width: MediaQuery.of(context).size.width / 3,
             height: MediaQuery.of(context).size.width / 3,
           ),
@@ -219,7 +222,7 @@ class _AccountPageState extends State<AccountPage> {
                 color: Colors.white,
               ),
               onPressed: () {
-                _showImagePickBottomSheet();
+                showImagePickBottomSheet();
               },
             ),
           ),
@@ -228,24 +231,26 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  void _validateForm() {
+  void validateForm() {
     if (!updateFormKey.currentState!.validate()) {
       Fluttertoast.showToast(msg: "Please enter required field!");
       return;
     }
-    _updateInfo();
+    updateInfo();
   }
 
-  void _updateInfo() {
-    context.read<AuthenticationBloc>().add(StartUpdateAccountEvent(
-          file: imageFile,
-          name: nameController.text,
-          email: emailController.text,
-          password: confirmPasswordController.text,
-        ));
+  void updateInfo() {
+    context.read<AuthenticationBloc>().add(
+          StartUpdateAccountEvent(
+            file: imageFile,
+            name: nameController.text,
+            email: emailController.text,
+            password: confirmPasswordController.text,
+          ),
+        );
   }
 
-  _showImagePickBottomSheet() {
+  showImagePickBottomSheet() {
     showModalBottomSheet(
       elevation: 0,
       shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(0)),

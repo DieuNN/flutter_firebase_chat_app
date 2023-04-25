@@ -25,7 +25,7 @@ class FirebaseAuthentication {
         uid: user!.uid,
         email: user.email!,
         photoUrl: user.photoURL,
-        name: user.displayName,
+        name: user.displayName!,
       );
     }
 
@@ -53,13 +53,13 @@ class FirebaseAuthentication {
   }
 
   static Future<void> createUserWithEmailAndPassword(
-      String email, String password) async {
+      String email, String password, String name) async {
     await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
     var user = FirebaseAuth.instance.currentUser;
     await FirebaseFirestore().initUserData(
-      name: user!.displayName,
-      email: user.email!,
+      name: name,
+      email: user!.email!,
       uid: user.uid,
     );
   }

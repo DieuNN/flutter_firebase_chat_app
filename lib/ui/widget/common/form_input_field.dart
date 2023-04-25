@@ -9,17 +9,20 @@ class FormInputField extends StatelessWidget {
   final TextEditingController controller;
   final bool shouldValidator;
   final bool isPassword;
+  final bool shouldShowContent;
   final Function(String)? onChange;
 
-  const FormInputField(
-      {super.key,
-      this.hintText,
-      this.suffixIcon,
-      required this.controller,
-      this.decoration,
-      required this.shouldValidator,
-      this.isPassword = false,
-      this.onChange});
+  const FormInputField({
+    super.key,
+    this.hintText,
+    this.suffixIcon,
+    required this.controller,
+    this.decoration,
+    required this.shouldValidator,
+    this.isPassword = false,
+    this.onChange,
+    this.shouldShowContent = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +33,9 @@ class FormInputField extends StatelessWidget {
           ? TextInputType.emailAddress
           : TextInputType.visiblePassword,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      obscureText: isPassword,
+      obscureText: !shouldShowContent,
       validator: (value) {
-        if (!shouldValidator!) {
+        if (!shouldValidator) {
           return null;
         }
         if (!isPassword) {

@@ -60,7 +60,10 @@ class AuthenticationBloc
         emit(CreateAccountInProgressState());
         try {
           await FirebaseAuthentication.createUserWithEmailAndPassword(
-              event.email, event.password);
+            event.email,
+            event.password,
+            event.name,
+          );
           emit(CreateAccountSuccessState());
         } on FirebaseAuthException catch (e) {
           log(e.toString());

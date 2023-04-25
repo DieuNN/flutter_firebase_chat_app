@@ -34,15 +34,6 @@ class _ConversationPageState extends State<ConversationPage> {
   File? imageFile;
   final String senderUid = FirebaseAuth.instance.currentUser!.uid;
 
-  List<MessageContent> fakeMessages = List.filled(
-    100,
-    MessageContent(
-      senderUid: "message uid",
-      type: "text",
-      content: "Message",
-      timeStamp: cloud.Timestamp.now(),
-    ),
-  );
 
   @override
   void initState() {

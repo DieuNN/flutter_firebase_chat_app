@@ -65,7 +65,9 @@ class _AddContactPageState extends State<AddContactPage> {
         listener: (context, state) {
           if (state is ContactSearchSuccessState) {
             setState(() {
-              contacts = state.contacts;
+              if (state.user != null) {
+                contacts = [state.user!];
+              }
             });
           }
           if (state is AddContactSuccessState) {
@@ -76,7 +78,7 @@ class _AddContactPageState extends State<AddContactPage> {
         child: SafeArea(
           child: ListView(
             children: [
-              _buildSearchBar(context),
+              _buildSearchBar(),
               _buildContactResult(context),
             ],
           ),
@@ -85,16 +87,16 @@ class _AddContactPageState extends State<AddContactPage> {
     );
   }
 
-  _buildSearchBar(BuildContext context) {
+  _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: UserSearchField(
         searchEditingController: searchEditController,
         onChange: (value) {
+          contacts = [];
           if (debounce?.isActive ?? false) {
             debounce?.cancel();
           }
-
           debounce = Timer(
             const Duration(seconds: 1),
             () {

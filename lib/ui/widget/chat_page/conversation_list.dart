@@ -5,6 +5,7 @@ import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/ui/widget/chat_page/conversation_item.dart';
 import 'package:chat_app/ui/widget/chat_page/no_conversation_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,11 +18,12 @@ class ConversationList extends StatefulWidget {
 
 class _ConversationListState extends State<ConversationList> {
   List<Conversation> conversations = [];
+  final String uid = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    context.read<ConversationBloc>().add(ConversationsLoadEvent());
+    context.read<ConversationBloc>().add(ConversationsLoadEvent(uid: uid));
   }
 
   @override
@@ -36,6 +38,7 @@ class _ConversationListState extends State<ConversationList> {
         });
       }
     }, builder: (context, state) {
+          log("Conversation list state is ${state.runtimeType}");
       if (state is ConversationsLoadSuccessState) {
         return conversations.isEmpty
             ? const NoConversationWidget()

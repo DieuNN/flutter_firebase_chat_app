@@ -14,25 +14,24 @@ class FirebaseFirestore {
       cloud.FirebaseFirestore.instance.collection("conversations");
 
   Future<void> updateUserProfile(
-      {String? name,
+      {required String name,
       required String email,
       String? profilePicture,
       required String uid}) async {
-    return await _userCollection.doc(uid).update(User(
-          email: email,
-          creationTime: DateTime.now().toIso8601String(),
-          uid: uid,
-          displayName: name,
-          photoUrl: profilePicture,
-          fcmToken: "",
-        ).toMap());
+    final updateValue = profilePicture == null
+        ? {"name": name, "email": email}
+        : {"name": name, "email": email, "photoUrl": profilePicture};
+    return await _userCollection.doc(uid).update({
+      "photoUrl": profilePicture,
+    });
   }
 
   Future<void> initUserData(
       {required String uid,
       required String email,
-      String? name,
+      required String name,
       String? photoUrl}) async {
+    await auth.FirebaseAuth.instance.currentUser!.updateDisplayName(name);
     return await _userCollection.doc(uid).set(User(
           uid: uid,
           creationTime: DateTime.now().toIso8601String(),
@@ -52,19 +51,29 @@ class FirebaseFirestore {
     });
   }
 
-  Future<List<User>> findContact({required String contactEmail}) async {
+  Future<User?> findContact({required String contactEmail}) async {
     try {
-      final result = <User>[];
-      final currentUserEmail = auth.FirebaseAuth.instance.currentUser!.email!;
-      final values =
-          await _userCollection.where("email", isEqualTo: contactEmail).get();
-      for (var element in values.docs) {
-        result.add(User.fromMap(element.data() as Map<String, dynamic>));
+      final currentUserEmail = auth.FirebaseAuth.instance.currentUser!.email;
+
+      final contactSnapshot = await _userCollection
+          .where("email", isEqualTo: contactEmail)
+          .where("email", isNotEqualTo: currentUserEmail)
+          .get();
+
+      if (contactSnapshot.docs.isEmpty) {
+        return null;
       }
-      return result;
+
+      if (contactSnapshot.docs.first.exists) {
+        final User user = User.fromMap(
+            contactSnapshot.docs.first.data() as Map<String, dynamic>);
+        return user;
+      }
+
+      return null;
     } catch (e) {
       log(e.toString());
-      return [];
+      return null;
     }
   }
 
@@ -79,7 +88,7 @@ class FirebaseFirestore {
     });
   }
 
-  Future<User?> getUserInfoByUid(String uid) async {
+  Future<User?> _getUserInfoByUid(String uid) async {
     final snapshot = await _userCollection.doc(uid).get();
     if (!snapshot.exists) {
       return null;
@@ -87,27 +96,39 @@ class FirebaseFirestore {
     return User.fromMap(snapshot.data() as Map<String, dynamic>);
   }
 
-  // Future<List<User>> loadUserContacts(String uid) async {
-  Future<List<User>> getUserContacts(String uid) async {
+  Future<List<String>> _getUserContactIds(String uid) async {
     try {
-      List<User> result = <User>[];
-      var userDocs = (await _userCollection.doc(uid).get()).get("contacts")
-          as List<dynamic>;
-      List<String> contactIds = userDocs.map((e) => e.toString()).toList();
-      var contacts = await _userCollection.get();
-      for (var contact in contacts.docs) {
-        var user = User.fromMap(contact.data() as Map<String, Object?>);
-        if (contactIds.contains(user.uid)) {
-          result.add(user);
-        }
+      var userSnapshots = await _userCollection.doc(uid).get();
+      if (userSnapshots.exists) {
+        var userIds = userSnapshots.get("contacts") as List<dynamic>;
+        return userIds.map((e) => e as String).toList();
       }
-      return result;
+      return [];
     } catch (e) {
+      log(e.toString());
       return [];
     }
   }
 
-  Future<cloud.DocumentReference> createConversation(
+  Future<List<User?>> getUserContacts(String uid) async {
+    List<String> contactIds = await _getUserContactIds(uid);
+    try {
+      if (contactIds.isEmpty) {
+        return [];
+      }
+      List<User?> result = [];
+      for (var element in contactIds) {
+        final userInfo = await _getUserInfoByUid(element);
+        result.add(userInfo);
+      }
+      return result;
+    } catch (e) {
+      log(e.toString());
+      return [];
+    }
+  }
+
+  Future<cloud.DocumentReference> _createConversation(
       Conversation conversation) async {
     final conversationRef =
         await _conversationsCollection.add(conversation.toJson());
@@ -119,14 +140,16 @@ class FirebaseFirestore {
     return conversationRef;
   }
 
+  // TODO: Logic here should be update
+
   Future<Conversation?> getConversation(String toUid) async {
     final String fromUid = auth.FirebaseAuth.instance.currentUser!.uid;
     final snapshot = await _conversationsCollection
         .where("fromUid", isEqualTo: fromUid)
         .where("toUid", isEqualTo: toUid)
         .get();
-    final fromUser = await getUserInfoByUid(fromUid);
-    final toUser = await getUserInfoByUid(toUid);
+    final fromUser = await _getUserInfoByUid(fromUid);
+    final toUser = await _getUserInfoByUid(toUid);
     if (fromUser == null || toUser == null) {
       return null;
     }
@@ -143,20 +166,26 @@ class FirebaseFirestore {
         fromEmail: fromUser.email,
         toEmail: toUser.email,
       );
-      await createConversation(conversation);
+      await _createConversation(conversation);
       return conversation;
     }
     return Conversation.fromJson(
         snapshot.docs.first.data() as Map<String, dynamic>);
   }
 
-  Future<List<Conversation>> getConversations() async {
-    final String uid = auth.FirebaseAuth.instance.currentUser!.uid;
+  Future<List<Conversation>> getConversations({required String uid}) async {
     final result = <Conversation>[];
-    final snapshot =
-        await _conversationsCollection.where("fromUid", isEqualTo: uid).get();
-    for (var element in snapshot.docs) {
-      result.add(Conversation.fromJson(element.data() as Map<String, dynamic>));
+    final subscribedGroupsSnapshot = (await _userCollection.doc(uid).get());
+
+    if (subscribedGroupsSnapshot.exists) {
+      final subscribedGroups =
+          subscribedGroupsSnapshot.get("groups") as List<dynamic>;
+      for (var element in subscribedGroups) {
+        final conversation = Conversation.fromJson(
+            (await _conversationsCollection.doc(element).get()).data()
+                as Map<String, dynamic>);
+        result.add(conversation);
+      }
     }
     return result;
   }
@@ -181,7 +210,7 @@ class FirebaseFirestore {
       messageCollection.add(messageContent.toJson());
       updateConversationLastMessage(docId, messageContent.content ?? "");
     } else {
-      docId = (await createConversation(conversation)).id;
+      docId = (await _createConversation(conversation)).id;
       final messageCollection =
           _conversationsCollection.doc(docId).collection("messageContent");
       final newRef = await messageCollection.add(messageContent.toJson());

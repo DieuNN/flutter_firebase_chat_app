@@ -19,6 +19,7 @@ class _SignUpPageState extends State<SignUpPage> {
   bool shouldShowPassword = false;
   bool shouldShowConfirmPassword = false;
   TextEditingController emailTextController = TextEditingController();
+  TextEditingController nameTextController = TextEditingController();
   TextEditingController passwordTextController = TextEditingController();
   TextEditingController confirmPasswordTextController = TextEditingController();
 
@@ -89,6 +90,7 @@ class _SignUpPageState extends State<SignUpPage> {
           child: Column(
             children: [
               _buildEmailInputForm(),
+              _buildNameInputForm(),
               _buildPasswordInputForm(),
               _buildConfirmPasswordInputForm(),
               _buildSignUpButton(formKey),
@@ -111,6 +113,10 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
         ),
         onPressed: () {
+          if (nameTextController.text.trim().isEmpty) {
+            Fluttertoast.showToast(msg: "Name cannot be empty!");
+            return;
+          }
           if (passwordTextController.text !=
               confirmPasswordTextController.text) {
             Fluttertoast.showToast(msg: "Password doesn't match!");
@@ -122,9 +128,9 @@ class _SignUpPageState extends State<SignUpPage> {
           }
           context.read<AuthenticationBloc>().add(
                 StartCreateAccountEvent(
-                  email: emailTextController.text,
-                  password: confirmPasswordTextController.text,
-                ),
+                    email: emailTextController.text,
+                    password: confirmPasswordTextController.text,
+                    name: nameTextController.text),
               );
         },
         child: const Text("Sign up"),
@@ -202,6 +208,18 @@ class _SignUpPageState extends State<SignUpPage> {
                   );
                 },
               ),
+      ),
+    );
+  }
+
+  _buildNameInputForm() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: FormInputField(
+        hintText: "Name",
+        controller: nameTextController,
+        isPassword: false,
+        shouldValidator: false,
       ),
     );
   }
