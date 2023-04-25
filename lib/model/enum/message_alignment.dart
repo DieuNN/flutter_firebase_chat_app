@@ -1,0 +1,3 @@
+enum MessageAlignment {
+  left, right
+}
