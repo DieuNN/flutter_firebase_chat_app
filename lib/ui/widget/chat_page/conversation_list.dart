@@ -35,10 +35,13 @@ class _ConversationListState extends State<ConversationList> {
       if (state is ConversationsLoadSuccessState) {
         setState(() {
           conversations = state.conversations;
+          for (var conversation in conversations) {
+            log(conversation.toMap().toString());
+          }
         });
       }
     }, builder: (context, state) {
-          log("Conversation list state is ${state.runtimeType}");
+      log("Conversation list state is ${state.runtimeType}");
       if (state is ConversationsLoadSuccessState) {
         return conversations.isEmpty
             ? const NoConversationWidget()

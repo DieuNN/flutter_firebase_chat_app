@@ -19,10 +19,12 @@ class MessagesLoadFailureState extends MessageState {
   MessagesLoadFailureState({required this.exception});
 }
 
-class MessageTextSendInProgressState extends MessageState {
-}
+class MessageTextSendInProgressState extends MessageState {}
 
 class MessageTextSendSuccessState extends MessageState {
+  final Stream<cloud.QuerySnapshot<Map<String, dynamic>>>? snapshot;
+
+  MessageTextSendSuccessState({this.snapshot});
 }
 
 class MessageTextSendFailureState extends MessageState {

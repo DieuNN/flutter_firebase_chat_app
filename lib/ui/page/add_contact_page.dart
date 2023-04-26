@@ -6,6 +6,7 @@ import 'package:chat_app/constants/app_constants.dart';
 import 'package:chat_app/model/entity/user.dart';
 import 'package:chat_app/ui/widget/chat_page/user_search_field.dart';
 import 'package:chat_app/ui/widget/contact_page/contact_item.dart';
+import 'package:chat_app/ui/widget/contact_page/no_contact_to_add.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -77,6 +78,7 @@ class _AddContactPageState extends State<AddContactPage> {
         },
         child: SafeArea(
           child: ListView(
+            shrinkWrap: true,
             children: [
               _buildSearchBar(),
               _buildContactResult(context),
@@ -134,12 +136,16 @@ class _AddContactPageState extends State<AddContactPage> {
           ),
         )
         .toList();
-    return ListView.builder(
-      shrinkWrap: true,
-      itemBuilder: (context, index) {
-        return items[index];
-      },
-      itemCount: contacts.length,
-    );
+    return contacts.isEmpty
+        ? const Center(
+            child: NoContactToAdd(),
+          )
+        : ListView.builder(
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return items[index];
+            },
+            itemCount: contacts.length,
+          );
   }
 }

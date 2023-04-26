@@ -39,6 +39,7 @@ class UserCircleAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         image: _getImage(),
+        color: Colors.white
       ),
     );
   }

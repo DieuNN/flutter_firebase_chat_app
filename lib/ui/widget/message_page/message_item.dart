@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:chat_app/constants/app_constants.dart';
 import 'package:chat_app/model/enum/message_alignment.dart';
 import 'package:chat_app/model/enum/message_type.dart';

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:developer' as dart_dev;
 import 'dart:math' as dart_math;
 
+import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
 import 'package:chat_app/blocs/message/message_bloc.dart';
 import 'package:chat_app/constants/app_constants.dart';
 import 'package:chat_app/model/entity/conversation.dart';
@@ -33,12 +34,11 @@ class _ConversationPageState extends State<ConversationPage> {
   late final TextEditingController messageInputController;
   File? imageFile;
   final String senderUid = FirebaseAuth.instance.currentUser!.uid;
-
+  Stream<cloud.QuerySnapshot<Map<String, dynamic>>>? snapshot;
 
   @override
   void initState() {
     conversationInfo = Conversation.fromJson(widget.args.first);
-
     messageInputController = TextEditingController();
 
     super.initState();
@@ -48,66 +48,95 @@ class _ConversationPageState extends State<ConversationPage> {
   void didChangeDependencies() async {
     context
         .read<MessageBloc>()
-        .add(MessageLoadEvent(toUid: conversationInfo.toUid!));
-    messageSnapshotsListener();
+        .add(MessageLoadEvent(conversation: conversationInfo));
+    addMessageSnapshotsListener();
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      maintainBottomViewPadding: true,
-      child: Scaffold(
-        backgroundColor: AppConstants.primaryColor,
-        appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        context.read<ConversationBloc>().add(ConversationsLoadEvent(
+            uid: FirebaseAuth.instance.currentUser!.uid));
+        return true;
+      },
+      child: SafeArea(
+        maintainBottomViewPadding: true,
+        child: Scaffold(
           backgroundColor: AppConstants.primaryColor,
-          title: _buildReceiverInfo(),
-          iconTheme: const IconThemeData(color: Colors.white),
-          actions: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.call),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.video_call),
-            ),
-          ],
-        ),
-        body: FooterLayout(
-          child: _buildPageBody(),
-          footer: _buildMessageInput(),
+          appBar: AppBar(
+            backgroundColor: AppConstants.primaryColor,
+            title: buildReceiverInfo(),
+            iconTheme: const IconThemeData(color: Colors.white),
+            actions: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.call),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.video_call),
+              ),
+            ],
+          ),
+          body: FooterLayout(
+            child: _buildPageBody(),
+            footer: buildMessageInput(),
+          ),
         ),
       ),
     );
   }
 
-  _buildReceiverInfo() {
+  buildReceiverInfo() {
+    String conversationName;
+    String? conversationImage;
+    String? conversationEmail;
+    String currentUid = FirebaseAuth.instance.currentUser!.uid;
+
+    // Reverse sender and receiver
+    if (currentUid == conversationInfo.fromUid) {
+      conversationName = conversationInfo.toName!;
+      conversationImage = conversationInfo.toAvatar!;
+      conversationEmail = conversationInfo.toEmail!;
+    } else {
+      conversationName = conversationInfo.fromName!;
+      conversationImage = conversationInfo.fromAvatar!;
+      conversationEmail = conversationInfo.fromEmail!;
+    }
     return ListTile(
       leading: UserCircleAvatar(
         width: 36,
-        imageUrl: conversationInfo.toAvatar,
+        imageUrl: conversationImage,
       ),
       title: Text(
-        conversationInfo.toName ?? conversationInfo.toUid ?? "User",
+        conversationName ?? "User",
         style: const TextStyle(color: Colors.white),
         maxLines: 1,
         overflow: TextOverflow.fade,
       ),
-      subtitle: conversationInfo.toEmail == null
-          ? null
-          : Text(
-              conversationInfo.toEmail!,
-              style: const TextStyle(color: Colors.white),
-              maxLines: 1,
-              overflow: TextOverflow.fade,
-            ),
+      subtitle: Text(
+        conversationEmail,
+        style: const TextStyle(color: Colors.white),
+        maxLines: 1,
+        overflow: TextOverflow.fade,
+      ),
     );
   }
 
   _buildPageBody() {
+    List<Widget> messageWidgets = messages.map((e) {
+      return MessageItem(
+        alignment: senderUid == e.senderUid
+            ? MessageAlignment.right
+            : MessageAlignment.left,
+        type: MessageType.text,
+        content: e.content,
+      );
+    }).toList();
     return BlocConsumer<MessageBloc, MessageState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is MessagesLoadSuccessState) {
           setState(() {
             messages = state.messages;
@@ -115,6 +144,12 @@ class _ConversationPageState extends State<ConversationPage> {
           if (state is MessageTextSendSuccessState) {
             Fluttertoast.showToast(msg: "Sent!");
           }
+        }
+        if (state is MessageTextSendSuccessState) {
+          setState(() {
+            snapshot ??= state.snapshot;
+            addMessageSnapshotsListener();
+          });
         }
       },
       builder: (context, state) {
@@ -131,16 +166,7 @@ class _ConversationPageState extends State<ConversationPage> {
                 ),
               );
             }
-
-            return messages.map((e) {
-              return MessageItem(
-                alignment: senderUid == e.senderUid
-                    ? MessageAlignment.right
-                    : MessageAlignment.left,
-                type: MessageType.text,
-                content: e.content,
-              );
-            }).toList()[index];
+            return messageWidgets[index];
           },
           separatorBuilder: (BuildContext context, int index) {
             return const SizedBox(
@@ -153,7 +179,7 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  Widget _buildMessageInput() {
+  Widget buildMessageInput() {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: SizedBox(
@@ -206,26 +232,39 @@ class _ConversationPageState extends State<ConversationPage> {
     if (messageInputController.text.trim().isEmpty) {
       return;
     }
+
     context.read<MessageBloc>().add(
           MessageTextSendEvent(
-            content: messageInputController.text,
-            conversation: conversationInfo,
-          ),
+              content: messageInputController.text,
+              conversation: conversationInfo,
+              sender: senderUid),
         );
+
+    if (snapshot == null) {
+      dart_dev.log("Init snapshot");
+      setState(() {
+        addMessageSnapshotsListener();
+      });
+    }
     messageInputController.text = "";
   }
 
-  messageSnapshotsListener() async {
-    final snapshots =
-        await FirebaseFirestore().getMessagesSnapshots(conversationInfo.toUid!);
-    snapshots?.listen((event) {
-      List<MessageContent> newMessage = [];
+  addMessageSnapshotsListener() async {
+    snapshot?.listen((event) {
+      List<MessageContent> newMessages = [];
       for (var element in event.docs) {
-        newMessage.add(MessageContent.fromJson(element.data()));
+        newMessages.add(MessageContent.fromJson(element.data()));
       }
       setState(() {
-        messages = newMessage;
+        messages = newMessages;
       });
     });
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 }

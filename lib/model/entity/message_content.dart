@@ -16,7 +16,7 @@ class MessageContent {
         timeStamp: messageContent["timeStamp"]);
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
       "senderUid": senderUid,
       "content": content,

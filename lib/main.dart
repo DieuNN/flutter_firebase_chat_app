@@ -6,6 +6,9 @@ import 'package:chat_app/blocs/contact/contact_bloc.dart';
 import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
 import 'package:chat_app/blocs/message/message_bloc.dart';
 import 'package:chat_app/blocs/pages/page_bloc.dart';
+import 'package:chat_app/model/entity/conversation.dart';
+import 'package:chat_app/model/entity/message_content.dart';
+import 'package:chat_app/model/enum/message_type.dart';
 import 'package:chat_app/network/firebase_firestore.dart';
 import 'package:chat_app/ui/page/add_contact_page.dart';
 import 'package:chat_app/ui/page/message_page.dart';
@@ -13,6 +16,8 @@ import 'package:chat_app/ui/page/home_page.dart';
 import 'package:chat_app/ui/page/login_page.dart';
 import 'package:chat_app/ui/page/sign_up_page.dart';
 import 'package:chat_app/utils/animated_route.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,8 +27,6 @@ void main() async {
   var binding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: binding);
   await Firebase.initializeApp();
-  await FirebaseFirestore()
-      .getConversations(uid: "EgXaC5PQNvYAAoXorPXgOW8CLrH2");
   runApp(const ChatApp());
 }
 

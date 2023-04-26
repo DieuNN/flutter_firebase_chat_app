@@ -5,6 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/model/entity/message_content.dart';
+import 'package:chat_app/model/enum/message_type.dart';
 import 'package:chat_app/network/firebase_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
 import 'package:meta/meta.dart';
@@ -21,7 +22,8 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     on<MessageLoadEvent>((event, emit) async {
       emit(MessagesLoadInProgressState());
       try {
-        final messages = await FirebaseFirestore().getMessages(event.toUid);
+        final messages =
+            await FirebaseFirestore().getMessages(event.conversation);
         emit(MessagesLoadSuccessState(messages: messages));
       } catch (e) {
         log(e.toString());
@@ -32,16 +34,24 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     on<MessageTextSendEvent>((event, emit) async {
       emit(MessageTextSendInProgressState());
       try {
-        await FirebaseFirestore().sendTextMessage(
+        log("Message sending called in bloc");
+        log("???");
+        log("Message sending called in bloc, map: ${event.conversation.toMap()}");
+        log("Message sending called in bloc, sender: ${event.conversation.fromUid}");
+        log("Message sending called in bloc, receiver: ${event.conversation.toUid}");
+
+        await FirebaseFirestore().sendMessage(
+            messageType: MessageType.text,
             messageContent: MessageContent(
               timeStamp: cloud.Timestamp.now(),
               content: event.content,
               type: "text",
-              senderUid: event.conversation.fromUid,
+              senderUid: event.sender,
             ),
             conversation: event.conversation);
-        emit(MessageTextSendSuccessState());
-      } on Exception catch (_, e) {
+        final snapshot = await FirebaseFirestore().getMessagesSnapshots(event.conversation);
+        emit(MessageTextSendSuccessState(snapshot: snapshot));
+      } catch (e) {
         log(e.toString());
         emit(MessageTextSendFailureState(error: e.toString()));
       }

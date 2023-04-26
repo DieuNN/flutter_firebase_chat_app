@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/ui/widget/common/user_avatar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ConversationItem extends StatelessWidget {
@@ -17,7 +18,7 @@ class ConversationItem extends StatelessWidget {
       return "Just now";
     }
     if (Duration(milliseconds: diff).inSeconds < Duration.secondsPerMinute) {
-      return "${diff}s ago";
+      return "${(diff/1000).round()}s ago";
     }
     if (Duration(milliseconds: diff).inMinutes < Duration.minutesPerHour) {
       return "${Duration(milliseconds: diff).inMinutes}m ago";
@@ -31,15 +32,28 @@ class ConversationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String conversationName;
+    String? conversationImage;
+    String currentUid = FirebaseAuth.instance.currentUser!.uid;
+
+    // Reverse sender and receiver
+    if (currentUid == conversation.fromUid) {
+      conversationName = conversation.toName!;
+      conversationImage = conversation.toAvatar;
+    } else {
+      conversationName = conversation.fromName!;
+      conversationImage = conversation.fromAvatar;
+    }
+
     return ListTile(
       onTap: () {
         Navigator.of(context)
-            .pushNamed("/chat", arguments: {conversation.toJson()});
+            .pushNamed("/chat", arguments: {conversation.toMap()});
       },
       splashColor: Colors.transparent,
-      leading: UserCircleAvatar(imageUrl: conversation.toAvatar),
+      leading: UserCircleAvatar(imageUrl: conversationImage),
       title: Text(
-        conversation.toName ?? conversation.toUid ?? "",
+        conversationName ?? "",
         style: const TextStyle(
           color: Colors.white,
           fontSize: 18,

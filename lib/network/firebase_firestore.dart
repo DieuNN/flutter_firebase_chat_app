@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/model/entity/message_content.dart';
+import 'package:chat_app/model/enum/message_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:fluttertoast/fluttertoast.dart';
@@ -131,12 +132,8 @@ class FirebaseFirestore {
   Future<cloud.DocumentReference> _createConversation(
       Conversation conversation) async {
     final conversationRef =
-        await _conversationsCollection.add(conversation.toJson());
-    await subscribeToConversation(
-      conversation.fromUid!,
-      conversation.toUid!,
-      conversationRef.id,
-    );
+        await _conversationsCollection.add(conversation.toMap());
+    await _subscribeToConversation(conversation, conversationRef.id);
     return conversationRef;
   }
 
@@ -144,16 +141,21 @@ class FirebaseFirestore {
 
   Future<Conversation?> getConversation(String toUid) async {
     final String fromUid = auth.FirebaseAuth.instance.currentUser!.uid;
+
     final snapshot = await _conversationsCollection
         .where("fromUid", isEqualTo: fromUid)
         .where("toUid", isEqualTo: toUid)
+        .get();
+    final snapshotReverse = await _conversationsCollection
+        .where("fromUid", isEqualTo: toUid)
+        .where("toUid", isEqualTo: fromUid)
         .get();
     final fromUser = await _getUserInfoByUid(fromUid);
     final toUser = await _getUserInfoByUid(toUid);
     if (fromUser == null || toUser == null) {
       return null;
     }
-    if (snapshot.size == 0) {
+    if (snapshot.size == 0 && snapshotReverse.size == 0) {
       final conversation = Conversation(
         fromUid: fromUser.uid,
         toUid: toUser.uid,
@@ -166,59 +168,121 @@ class FirebaseFirestore {
         fromEmail: fromUser.email,
         toEmail: toUser.email,
       );
+      log("Snapshot size ${snapshot.size}");
+      log("Snapshot reversed size ${snapshotReverse.size}");
+      log("Should create new document");
       await _createConversation(conversation);
       return conversation;
     }
-    return Conversation.fromJson(
-        snapshot.docs.first.data() as Map<String, dynamic>);
+    if (snapshot.size > 0) {
+      return Conversation.fromJson(
+          snapshot.docs.first.data() as Map<String, dynamic>);
+    } else {
+      return Conversation.fromJson(
+          snapshotReverse.docs.first.data() as Map<String, dynamic>);
+    }
+  }
+
+  Future<List<String>?> _getUserSubscribedGroupIds(String uid) async {
+    final userSnapshots = await _userCollection.doc(uid).get();
+    final groupIds = await userSnapshots.get("groups") as List<dynamic>;
+    return groupIds.map((e) => e.toString()).toList();
+  }
+
+  Future<Conversation?> _getConversationInfo(String? conversationId) async {
+    if (conversationId == null) {
+      return null;
+    }
+    try {
+      final conversationSnapshot =
+          await _conversationsCollection.doc(conversationId).get();
+      return Conversation.fromJson(
+          conversationSnapshot.data() as Map<String, dynamic>);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<List<Conversation>> getConversations({required String uid}) async {
     final result = <Conversation>[];
-    final subscribedGroupsSnapshot = (await _userCollection.doc(uid).get());
 
-    if (subscribedGroupsSnapshot.exists) {
-      final subscribedGroups =
-          subscribedGroupsSnapshot.get("groups") as List<dynamic>;
-      for (var element in subscribedGroups) {
-        final conversation = Conversation.fromJson(
-            (await _conversationsCollection.doc(element).get()).data()
-                as Map<String, dynamic>);
+    List<String>? userSubscribedGroupIds =
+        await _getUserSubscribedGroupIds(uid);
+    if (userSubscribedGroupIds == null || userSubscribedGroupIds.isEmpty) {
+      return [];
+    }
+
+    try {
+      for (var value in userSubscribedGroupIds) {
+        final conversation = await _getConversationInfo(value);
+
+        if (conversation == null) {
+          continue;
+        }
         result.add(conversation);
       }
+
+      return result;
+    } catch (e) {
+      log(e.toString());
+      return [];
     }
-    return result;
   }
 
-  Future<void> sendTextMessage(
+  Future<String?> _getConversationUid(Conversation conversation) async {
+    final snapshots = await _conversationsCollection
+        .where("fromUid", isEqualTo: conversation.fromUid)
+        .where("toUid", isEqualTo: conversation.toUid)
+        .get();
+
+    final snapshotsReversed = await _conversationsCollection
+        .where("fromUid", isEqualTo: conversation.toUid)
+        .where("toUid", isEqualTo: conversation.fromUid)
+        .get();
+
+    if (snapshots.size > 0) {
+      return snapshots.docs.first.id;
+    }
+
+    if (snapshotsReversed.size > 0) {
+      return snapshotsReversed.docs.first.id;
+    }
+
+    return null;
+  }
+
+  Future<void> sendMessage(
       {required MessageContent messageContent,
-      required Conversation conversation}) async {
-    var ref = (await _conversationsCollection
-            .where("fromUid", isEqualTo: conversation.fromUid)
-            .where("toUid", isEqualTo: conversation.toUid)
-            .get())
-        .docs;
+      required Conversation conversation,
+      required MessageType messageType}) async {
+    try {
+      var conversationUid = await _getConversationUid(conversation);
 
-    var docId = "";
+      conversationUid ??= (await _createConversation(conversation)).id;
 
-    if (ref.isNotEmpty) {
-      docId = ref.first.id;
-      final messageCollection =
-          _conversationsCollection.doc(docId).collection("messageContent");
-      docId = ref.first.id;
-      messageContent.senderUid = conversation.fromUid;
-      messageCollection.add(messageContent.toJson());
-      updateConversationLastMessage(docId, messageContent.content ?? "");
-    } else {
-      docId = (await _createConversation(conversation)).id;
-      final messageCollection =
-          _conversationsCollection.doc(docId).collection("messageContent");
-      final newRef = await messageCollection.add(messageContent.toJson());
-      updateConversationLastMessage(newRef.id, messageContent.content ?? "");
+      switch (messageType) {
+        case MessageType.text:
+          _sendTextMessage(conversationUid, messageContent, conversation);
+          break;
+        case MessageType.image:
+          _sendImageMessage();
+          break;
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
     }
   }
 
-  Future<void> updateConversationLastMessage(
+  Future<void> _sendTextMessage(String conversationUid, MessageContent content,
+      Conversation conversationInfo) async {
+    final messagesCollection =
+        _conversationsCollection.doc(conversationUid).collection("messages");
+    await messagesCollection.add(content.toMap());
+    await _updateConversationLastMessage(conversationUid, content.content!);
+  }
+
+  Future<void> _updateConversationLastMessage(
       String ref, String latestMessage) async {
     await _conversationsCollection.doc(ref).update({
       "lastMessage": latestMessage,
@@ -226,61 +290,55 @@ class FirebaseFirestore {
     });
   }
 
-  Future<List<MessageContent>> getMessages(String toUid) async {
+  Future<List<MessageContent>> getMessages(Conversation conversation) async {
     final result = <MessageContent>[];
-    final String fromUid = auth.FirebaseAuth.instance.currentUser!.uid;
-    final ref = (await _conversationsCollection
-            .where("fromUid", isEqualTo: fromUid)
-            .where("toUid", isEqualTo: toUid)
-            .get())
-        .docs
-        .first
-        .id;
-    final messageDocuments = await _conversationsCollection
-        .doc(ref)
-        .collection("messageContent")
-        .orderBy("timeStamp", descending: true)
-        .get();
-    for (var element in messageDocuments.docs) {
-      result.add(MessageContent.fromJson(element.data()));
+
+    try {
+      final conversationUid = await _getConversationUid(conversation);
+
+      final messagesSnapshot = await _conversationsCollection
+          .doc(conversationUid)
+          .collection("messages")
+          .orderBy("timeStamp", descending: true)
+          .get();
+      log("Snapshot data: ${messagesSnapshot.size}");
+      for (var element in messagesSnapshot.docs) {
+        result.add(MessageContent.fromJson(element.data()));
+      }
+      log(result.length.toString());
+      return result;
+    } catch (e) {
+      log(e.toString());
+      return [];
     }
-    log(result.toString());
-    return result;
   }
 
-  Future<void> sendImageMessage() async {
-    final MessageContent messageContent = MessageContent();
+  Future<void> _sendImageMessage() async {
+    throw UnimplementedError();
   }
 
   Future<Stream<cloud.QuerySnapshot<Map<String, dynamic>>>?>
-      getMessagesSnapshots(String toUid) async {
-    final String fromUid = auth.FirebaseAuth.instance.currentUser!.uid;
-    final ref = (await _conversationsCollection
-            .where("fromUid", isEqualTo: fromUid)
-            .where("toUid", isEqualTo: toUid)
-            .get())
-        .docs;
-    if (ref.isEmpty) {
+      getMessagesSnapshots(Conversation conversation) async {
+    String? conversationUid = await _getConversationUid(conversation);
+
+    if (conversationUid == null) {
       return null;
     }
-    var docId = "";
-    if (ref.first.exists) {
-      return _conversationsCollection
-          .doc(ref.first.id)
-          .collection("messageContent")
-          .orderBy("timeStamp", descending: true)
-          .snapshots();
-    } else {}
-    return null;
+
+    return _conversationsCollection
+        .doc(conversationUid)
+        .collection("messages")
+        .orderBy("timeStamp", descending: true)
+        .snapshots();
   }
 
-  Future<void> subscribeToConversation(
-      String fromUid, String toUid, String conversation) async {
-    await _userCollection.doc(fromUid).update({
-      "groups": cloud.FieldValue.arrayUnion([conversation])
+  Future<void> _subscribeToConversation(
+      Conversation conversation, String conversationUid) async {
+    await _userCollection.doc(conversation.fromUid).update({
+      "groups": cloud.FieldValue.arrayUnion([conversationUid])
     });
-    await _userCollection.doc(toUid).update({
-      "groups": cloud.FieldValue.arrayUnion([conversation])
+    await _userCollection.doc(conversation.toUid).update({
+      "groups": cloud.FieldValue.arrayUnion([conversationUid])
     });
   }
 }

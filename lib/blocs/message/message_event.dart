@@ -6,14 +6,15 @@ abstract class MessageEvent {}
 class MessageInitEvent extends MessageEvent {}
 
 class MessageLoadEvent extends MessageEvent {
-  final String toUid;
+  final Conversation conversation;
 
-  MessageLoadEvent({required this.toUid});
+  MessageLoadEvent({required this.conversation});
 }
 
 class MessageTextSendEvent extends MessageEvent {
   final String content;
   final Conversation conversation;
+  final String sender;
 
-  MessageTextSendEvent({required this.content, required this.conversation});
+  MessageTextSendEvent({required this.sender, required this.content, required this.conversation});
 }

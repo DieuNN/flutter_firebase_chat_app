@@ -24,7 +24,7 @@ class Conversation {
       this.lastMessage,
       this.lastMessageTime});
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
       "fromUid": fromUid,
       "fromName": fromName,

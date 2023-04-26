@@ -29,7 +29,7 @@ class ContactItem extends StatelessWidget {
           toName: contact.displayName,
           fromName: signedInUser.displayName,
           toUid: contact.uid,
-        ).toJson();
+        ).toMap();
         Navigator.of(context).pushNamed("/chat", arguments: {conversation});
       },
       leading: UserCircleAvatar(imageUrl: contact.photoUrl),
