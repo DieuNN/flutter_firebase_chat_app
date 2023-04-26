@@ -221,7 +221,14 @@ class FirebaseFirestore {
         }
         result.add(conversation);
       }
-
+      result.sort(
+        (first, second) {
+          int result = (first.lastMessageTime?.compareTo(
+                  second.lastMessageTime ?? cloud.Timestamp.now())) ??
+              0;
+          return -result;
+        },
+      );
       return result;
     } catch (e) {
       log(e.toString());

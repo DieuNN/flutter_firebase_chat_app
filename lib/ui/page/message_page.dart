@@ -98,11 +98,11 @@ class _ConversationPageState extends State<ConversationPage> {
     // Reverse sender and receiver
     if (currentUid == conversationInfo.fromUid) {
       conversationName = conversationInfo.toName!;
-      conversationImage = conversationInfo.toAvatar!;
+      conversationImage = conversationInfo.toAvatar;
       conversationEmail = conversationInfo.toEmail!;
     } else {
       conversationName = conversationInfo.fromName!;
-      conversationImage = conversationInfo.fromAvatar!;
+      conversationImage = conversationInfo.fromAvatar;
       conversationEmail = conversationInfo.fromEmail!;
     }
     return ListTile(

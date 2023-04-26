@@ -27,12 +27,10 @@ class _ChatPageState extends State<ChatPage> {
         KeyboardUtil.hideKeyboard();
       },
       child: SafeArea(
-        child: ListView(
-          physics: const ClampingScrollPhysics(),
-          shrinkWrap: true,
+        child: Column(
           children: [
             _buildSearchBar(context),
-            const ConversationList(),
+            const Expanded(child: ConversationList()),
           ],
         ),
       ),
