@@ -1,0 +1,3 @@
+Sending message:
+    - If conversation already exists, add message content to that conversation, get snapshot to watch changes in database
+    - If not, create new conversation, let 2 users subscribe to it,
