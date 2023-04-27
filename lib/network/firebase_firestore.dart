@@ -147,8 +147,6 @@ class FirebaseFirestore {
     return conversationRef;
   }
 
-  // TODO: Logic here should be update
-
   Future<Conversation?> getConversation(String toUid) async {
     final String fromUid = auth.FirebaseAuth.instance.currentUser!.uid;
 
@@ -178,9 +176,6 @@ class FirebaseFirestore {
         fromEmail: fromUser.email,
         toEmail: toUser.email,
       );
-      log("Snapshot size ${snapshot.size}");
-      log("Snapshot reversed size ${snapshotReverse.size}");
-      log("Should create new document");
       await _createConversation(conversation);
       return conversation;
     }
@@ -317,11 +312,9 @@ class FirebaseFirestore {
           .collection("messages")
           .orderBy("timeStamp", descending: true)
           .get();
-      log("Snapshot data: ${messagesSnapshot.size}");
       for (var element in messagesSnapshot.docs) {
         result.add(MessageContent.fromJson(element.data()));
       }
-      log(result.length.toString());
       return result;
     } catch (e) {
       log(e.toString());
