@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/ui/widget/common/user_avatar.dart';
+import 'package:chat_app/utils/keyboard_util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,7 @@ class ConversationItem extends StatelessWidget {
       onTap: () {
         Navigator.of(context)
             .pushNamed("/chat", arguments: {conversation.toMap()});
+        KeyboardUtil.hideKeyboard();
       },
       splashColor: Colors.transparent,
       leading: UserCircleAvatar(imageUrl: conversationImage),

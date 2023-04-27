@@ -158,6 +158,7 @@ class _SignUpPageState extends State<SignUpPage> {
         hintText: "Password",
         controller: passwordTextController,
         shouldValidator: true,
+        shouldShowContent: shouldShowPassword,
         suffixIcon: shouldShowPassword == true
             ? IconButton(
                 icon: const Icon(Icons.visibility),
@@ -186,6 +187,7 @@ class _SignUpPageState extends State<SignUpPage> {
       padding: const EdgeInsets.all(16),
       child: FormInputField(
         hintText: "Confirm password",
+        shouldShowContent: shouldShowConfirmPassword,
         isPassword: true,
         controller: confirmPasswordTextController,
         shouldValidator: true,

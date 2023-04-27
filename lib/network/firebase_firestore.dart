@@ -119,11 +119,19 @@ class FirebaseFirestore {
       if (contactIds.isEmpty) {
         return [];
       }
+
       List<User?> result = [];
+      final userInfoFutures = <Future<dynamic>>[];
       for (var element in contactIds) {
-        final userInfo = await _getUserInfoByUid(element);
-        result.add(userInfo);
+        userInfoFutures.add(_getUserInfoByUid(element));
       }
+
+      final userInfoList = await Future.wait(userInfoFutures);
+      userInfoList.where((element) {
+        return element != null;
+      }).forEach((element) {
+        result.add(element);
+      });
       return result;
     } catch (e) {
       log(e.toString());
@@ -215,14 +223,17 @@ class FirebaseFirestore {
     }
 
     try {
+      final conversationFutures = <Future<dynamic>>[];
       for (var value in userSubscribedGroupIds) {
-        final conversation = await _getConversationInfo(value);
-
-        if (conversation == null) {
-          continue;
-        }
-        result.add(conversation);
+        conversationFutures.add(_getConversationInfo(value));
       }
+
+      var conversations = await Future.wait(conversationFutures);
+
+      conversations.where((element) => element != null).forEach((e) {
+        result.add(e);
+      });
+
       result.sort(
         (first, second) {
           int result = (first.lastMessageTime?.compareTo(

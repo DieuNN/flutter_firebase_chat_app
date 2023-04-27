@@ -29,12 +29,16 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: binding);
   if (kIsWeb) {
     FlutterNativeSplash.remove();
-    await Firebase.initializeApp(
-        options: const FirebaseOptions(
-            apiKey: "AIzaSyBr-kiWZQhInKiiW-JFkDqHQlfSGgQGj8U",
-            appId: "1:320497612221:web:614c125424079fd2510ed4",
-            messagingSenderId: "320497612221",
-            projectId: "chat-app-e6c8a"));
+    final firebaseApp = await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyBr-kiWZQhInKiiW-JFkDqHQlfSGgQGj8U",
+        appId: "1:320497612221:web:614c125424079fd2510ed4",
+        messagingSenderId: "320497612221",
+        storageBucket: "gs://chat-app-e6c8a.appspot.com",
+        projectId: "chat-app-e6c8a",
+      ),
+    );
+    cloud.FirebaseFirestore.instanceFor(app: firebaseApp);
   }
   await Firebase.initializeApp();
 
