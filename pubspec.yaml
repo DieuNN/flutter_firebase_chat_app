@@ -57,6 +57,7 @@ dependencies:
   firebase_storage: ^11.1.0
   firebase_messaging: ^14.4.1
   keyboard_attachable: ^2.1.0
+  easy_image_viewer: ^1.2.0
 
 
 dev_dependencies:

@@ -9,8 +9,9 @@ class MessagesLoadInProgressState extends MessageState {}
 
 class MessagesLoadSuccessState extends MessageState {
   final List<MessageContent> messages;
+  final Stream<cloud.QuerySnapshot<Map<String, dynamic>>>? snapshot;
 
-  MessagesLoadSuccessState({required this.messages});
+  MessagesLoadSuccessState({this.snapshot, required this.messages});
 }
 
 class MessagesLoadFailureState extends MessageState {
@@ -31,4 +32,18 @@ class MessageTextSendFailureState extends MessageState {
   final String error;
 
   MessageTextSendFailureState({required this.error});
+}
+
+class MessageImageSendInProgressState extends MessageState {}
+
+class MessageImageSendSuccessState extends MessageState {
+  final Stream<cloud.QuerySnapshot<Map<String, dynamic>>>? snapshot;
+
+  MessageImageSendSuccessState({this.snapshot});
+}
+
+class MessageImageSendFailureState extends MessageState {
+  final String error;
+
+  MessageImageSendFailureState({required this.error});
 }

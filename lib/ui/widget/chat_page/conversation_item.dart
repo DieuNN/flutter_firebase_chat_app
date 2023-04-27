@@ -18,7 +18,7 @@ class ConversationItem extends StatelessWidget {
       return "Just now";
     }
     if (Duration(milliseconds: diff).inSeconds < Duration.secondsPerMinute) {
-      return "${(diff/1000).round()}s ago";
+      return "${(diff / 1000).round()}s ago";
     }
     if (Duration(milliseconds: diff).inMinutes < Duration.minutesPerHour) {
       return "${Duration(milliseconds: diff).inMinutes}m ago";
@@ -62,9 +62,12 @@ class ConversationItem extends StatelessWidget {
       ),
       subtitle: conversation.lastMessage != null
           ? Text(
+              maxLines: 1,
               conversation.lastMessage!,
               style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500),
             )
           : null,
       trailing: Text(

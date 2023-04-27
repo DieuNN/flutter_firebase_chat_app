@@ -1,8 +1,10 @@
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/constants/app_constants.dart';
 import 'package:chat_app/model/enum/message_alignment.dart';
 import 'package:chat_app/model/enum/message_type.dart';
+import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
 
 class MessageItem extends StatelessWidget {
@@ -17,65 +19,90 @@ class MessageItem extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (type) {
       case MessageType.text:
-        return _buildTextMessage(alignment);
+        if (alignment == MessageAlignment.left) {
+          return _buildTextMessageLeft(context);
+        }
+        return _buildTextMessageRight(context);
       case MessageType.image:
-        return const Placeholder();
+        if (alignment == MessageAlignment.left) {
+          return _buildImageMessageLeft(context);
+        }
+        return _buildImageMessageRight(context);
     }
   }
 
-  Widget _buildTextMessage(MessageAlignment messageAlignment) {
+  Widget _buildTextMessageRight(context) {
     return Align(
-      alignment: messageAlignment == MessageAlignment.left
-          ? Alignment.centerLeft
-          : Alignment.centerRight,
-      child: Wrap(
-        alignment: messageAlignment == MessageAlignment.left
-            ? WrapAlignment.start
-            : WrapAlignment.end,
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-                color: messageAlignment == MessageAlignment.left
-                    ? AppConstants.secondaryColor
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(8)),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: messageAlignment == MessageAlignment.left
-                  ? [
-                      CustomPaint(
-                        painter: Triangle(
-                          backgroundColor:
-                              messageAlignment == MessageAlignment.left
-                                  ? AppConstants.secondaryColor
-                                  : Colors.white,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Text(
-                          content ?? "???",
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ]
-                  : [
-                      Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Text(content ?? "???"),
-                      ),
-                      CustomPaint(
-                        painter: Triangle(
-                          backgroundColor:
-                              messageAlignment == MessageAlignment.left
-                                  ? AppConstants.secondaryColor
-                                  : Colors.white,
-                        ),
-                      ),
-                    ],
+      alignment: Alignment.centerRight,
+      child: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+        child: Wrap(
+          alignment: WrapAlignment.end,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(8)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Text(content ?? "???"),
+                    ),
+                  ),
+                  CustomPaint(
+                    painter: Triangle(
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextMessageLeft(context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+        child: Wrap(
+          alignment: WrapAlignment.start,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppConstants.secondaryColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CustomPaint(
+                    painter: Triangle(
+                      backgroundColor: AppConstants.secondaryColor,
+                    ),
+                  ),
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Text(
+                        content ?? "???",
+                        softWrap: true,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -88,6 +115,57 @@ class MessageItem extends StatelessWidget {
       children: const [
         Text("This is right message"),
       ],
+    );
+  }
+
+  // 4:3 image ratio, if width is 70% screen width, so height should be 70% * 3/4
+  Widget _buildImageMessageLeft(BuildContext context) {
+    final imageProvider = CachedNetworkImageProvider(content!);
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: GestureDetector(
+        onTap: () {
+          showImageViewer(context, imageProvider, doubleTapZoomable: true);
+        },
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: MediaQuery.of(context).size.width * 0.7,
+            minHeight: MediaQuery.of(context).size.width * (0.7 * (3 / 4)),
+            maxHeight: MediaQuery.of(context).size.width * (0.7 * (3 / 4)),
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+              borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageMessageRight(BuildContext context) {
+    final imageProvider = CachedNetworkImageProvider(content!);
+    return Align(
+      alignment: Alignment.centerRight,
+      child: GestureDetector(
+        onTap: () {
+          showImageViewer(context, imageProvider, doubleTapZoomable: true);
+        },
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: MediaQuery.of(context).size.width * 0.7,
+            minHeight: MediaQuery.of(context).size.width * (0.7 * (3 / 4)),
+            maxHeight: MediaQuery.of(context).size.width * (0.7 * (3 / 4)),
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+              borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

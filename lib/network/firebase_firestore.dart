@@ -1,8 +1,10 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/model/entity/message_content.dart';
 import 'package:chat_app/model/enum/message_type.dart';
+import 'package:chat_app/network/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:fluttertoast/fluttertoast.dart';
@@ -260,33 +262,29 @@ class FirebaseFirestore {
 
   Future<void> sendMessage(
       {required MessageContent messageContent,
-      required Conversation conversation,
-      required MessageType messageType}) async {
+      required Conversation conversation}) async {
     try {
       var conversationUid = await _getConversationUid(conversation);
 
       conversationUid ??= (await _createConversation(conversation)).id;
 
+      MessageType messageType =
+          messageContent.type == "text" ? MessageType.text : MessageType.image;
+
       switch (messageType) {
         case MessageType.text:
-          _sendTextMessage(conversationUid, messageContent, conversation);
+          _sendTextMessage(
+              conversationUid: conversationUid, content: messageContent);
           break;
         case MessageType.image:
-          _sendImageMessage();
+          _sendImageMessage(
+              content: messageContent, conversationUid: conversationUid);
           break;
       }
     } catch (e) {
       log(e.toString());
       rethrow;
     }
-  }
-
-  Future<void> _sendTextMessage(String conversationUid, MessageContent content,
-      Conversation conversationInfo) async {
-    final messagesCollection =
-        _conversationsCollection.doc(conversationUid).collection("messages");
-    await messagesCollection.add(content.toMap());
-    await _updateConversationLastMessage(conversationUid, content.content!);
   }
 
   Future<void> _updateConversationLastMessage(
@@ -320,8 +318,30 @@ class FirebaseFirestore {
     }
   }
 
-  Future<void> _sendImageMessage() async {
-    throw UnimplementedError();
+  Future<void> _sendTextMessage({
+    required String conversationUid,
+    required MessageContent content,
+  }) async {
+    final messagesCollection =
+        _conversationsCollection.doc(conversationUid).collection("messages");
+    await messagesCollection.add(content.toMap());
+    await _updateConversationLastMessage(conversationUid, content.content!);
+  }
+
+  Future<void> _sendImageMessage({
+    required MessageContent content,
+    required String conversationUid,
+  }) async {
+    if (content.file == null) {
+      return;
+    }
+    final downloadUrl = await FirebaseStorage().uploadImage(content.file!);
+    final messagesCollection =
+        _conversationsCollection.doc(conversationUid).collection("messages");
+    content.content = downloadUrl;
+    content.type = "image";
+    await messagesCollection.add(content.toMap());
+    await _updateConversationLastMessage(conversationUid, content.content!);
   }
 
   Future<Stream<cloud.QuerySnapshot<Map<String, dynamic>>>?>

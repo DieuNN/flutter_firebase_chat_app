@@ -18,6 +18,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 
 class ConversationPage extends StatefulWidget {
@@ -35,12 +37,33 @@ class _ConversationPageState extends State<ConversationPage> {
   File? imageFile;
   final String senderUid = FirebaseAuth.instance.currentUser!.uid;
   Stream<cloud.QuerySnapshot<Map<String, dynamic>>>? snapshot;
+  ImagePicker picker = ImagePicker();
+
+  // List<MessageContent> fakeMessages = [
+  //   MessageContent(
+  //     content: "https://images.unsplash.com/flagged/photo-1557427161-4701a0fa2f42?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8Mnx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=60",
+  //     type: "image",
+  //     timeStamp: cloud.Timestamp.now(),
+  //     senderUid: "gPko4rYpQsdeQ3IL1OeopFExFCS2",
+  //   ),
+  //   MessageContent(
+  //     content: "https://images.unsplash.com/flagged/photo-1557427161-4701a0fa2f42?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8Mnx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=60",
+  //     type: "image",
+  //     timeStamp: cloud.Timestamp.now(),
+  //     senderUid: "gPko4rYpQsdeQ3IL1OeopFExFCS2",
+  //   ),
+  //   MessageContent(
+  //     content: "https://images.unsplash.com/flagged/photo-1557427161-4701a0fa2f42?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8Mnx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=60",
+  //     type: "image",
+  //     timeStamp: cloud.Timestamp.now(),
+  //     senderUid: "gPko4rYpQsdeQ3IL1OeopFExFCS2",
+  //   ),
+  // ];
 
   @override
   void initState() {
     conversationInfo = Conversation.fromJson(widget.args.first);
     messageInputController = TextEditingController();
-
     super.initState();
   }
 
@@ -49,7 +72,6 @@ class _ConversationPageState extends State<ConversationPage> {
     context
         .read<MessageBloc>()
         .add(MessageLoadEvent(conversation: conversationInfo));
-    addMessageSnapshotsListener();
     super.didChangeDependencies();
   }
 
@@ -82,7 +104,7 @@ class _ConversationPageState extends State<ConversationPage> {
           ),
           body: FooterLayout(
             child: _buildPageBody(),
-            footer: buildMessageInput(),
+            footer: SafeArea(child: buildMessageInput()),
           ),
         ),
       ),
@@ -131,15 +153,26 @@ class _ConversationPageState extends State<ConversationPage> {
         alignment: senderUid == e.senderUid
             ? MessageAlignment.right
             : MessageAlignment.left,
-        type: MessageType.text,
+            type: e.type == "text" ? MessageType.text : MessageType.image,
         content: e.content,
       );
     }).toList();
+    // List<Widget> fakeMessageWidgets = fakeMessages.map((e) {
+    //   return MessageItem(
+    //     alignment: senderUid == e.senderUid
+    //         ? MessageAlignment.right
+    //         : MessageAlignment.left,
+    //     type: e.type == "text" ? MessageType.text : MessageType.image,
+    //     content: e.content,
+    //   );
+    // }).toList();
     return BlocConsumer<MessageBloc, MessageState>(
       listener: (context, state) async {
         if (state is MessagesLoadSuccessState) {
           setState(() {
             messages = state.messages;
+            snapshot ??= state.snapshot;
+            addMessageSnapshotsListener();
           });
           if (state is MessageTextSendSuccessState) {
             Fluttertoast.showToast(msg: "Sent!");
@@ -173,7 +206,7 @@ class _ConversationPageState extends State<ConversationPage> {
               height: 8,
             );
           },
-          itemCount: messages.length,
+          itemCount: messageWidgets.length,
         );
       },
     );
@@ -200,7 +233,7 @@ class _ConversationPageState extends State<ConversationPage> {
                       Icons.image,
                       color: Colors.white,
                     ),
-                    onPressed: () {},
+                    onPressed: showImagePickBottomSheet,
                   ),
                   filled: true,
                   fillColor: AppConstants.secondaryColor,
@@ -216,7 +249,7 @@ class _ConversationPageState extends State<ConversationPage> {
               ),
             ),
             IconButton(
-              onPressed: sendMessage,
+              onPressed: sendTextMessage,
               icon: const Icon(
                 Icons.send,
                 color: Colors.white,
@@ -228,7 +261,24 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  sendMessage() {
+  sendImageMessage() {
+    if (imageFile == null) {
+      return;
+    }
+    final sender = FirebaseAuth.instance.currentUser!.uid;
+    context.read<MessageBloc>().add(MessageImageSendEvent(
+        file: imageFile!,
+        sender: sender,
+        content: MessageContent(
+          senderUid: sender,
+          timeStamp: cloud.Timestamp.now(),
+          type: "image",
+          file: imageFile,
+        ),
+        conversation: conversationInfo));
+  }
+
+  sendTextMessage() {
     if (messageInputController.text.trim().isEmpty) {
       return;
     }
@@ -259,6 +309,62 @@ class _ConversationPageState extends State<ConversationPage> {
         messages = newMessages;
       });
     });
+  }
+
+  showImagePickBottomSheet() {
+    showModalBottomSheet(
+      elevation: 0,
+      shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(0)),
+      context: context,
+      builder: (context) {
+        return Wrap(
+          children: [
+            ListTile(
+              leading: const FaIcon(FontAwesomeIcons.image),
+              title: const Text(
+                "Gallery",
+                style: TextStyle(color: AppConstants.primaryColor),
+              ),
+              onTap: () async {
+                var navigator = Navigator.of(context);
+                final XFile? image =
+                    await picker.pickImage(source: ImageSource.gallery);
+                setState(() {
+                  if (image == null) {
+                    return;
+                  }
+                  imageFile = File(image.path);
+                  sendImageMessage();
+                });
+                navigator.pop();
+              },
+            ),
+            ListTile(
+              leading: const FaIcon(FontAwesomeIcons.camera),
+              title: const Text(
+                "Camera",
+                style: TextStyle(color: AppConstants.primaryColor),
+              ),
+              onTap: () async {
+                var navigator = Navigator.of(context);
+                final XFile? image =
+                    await picker.pickImage(source: ImageSource.camera);
+                setState(() {
+                  if (image == null) {
+                    return;
+                  }
+                  imageFile = File(image.path);
+                  sendImageMessage();
+                });
+                navigator.pop();
+              },
+            ),
+            // idk why we need 1 more list tile, if not it wouldn't work
+            const ListTile(),
+          ],
+        );
+      },
+    );
   }
 
   @override

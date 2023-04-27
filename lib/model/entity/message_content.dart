@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MessageContent {
   String? senderUid;
-  final String? content;
-  final String? type;
+  String? content;
+  String? type;
+  final File? file;
   final Timestamp? timeStamp;
 
-  MessageContent({this.senderUid, this.content, this.type, this.timeStamp});
+  MessageContent(
+      {this.file, this.senderUid, this.content, this.type, this.timeStamp});
 
   factory MessageContent.fromJson(Map<String, dynamic> messageContent) {
     return MessageContent(

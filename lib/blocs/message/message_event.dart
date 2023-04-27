@@ -16,5 +16,21 @@ class MessageTextSendEvent extends MessageEvent {
   final Conversation conversation;
   final String sender;
 
-  MessageTextSendEvent({required this.sender, required this.content, required this.conversation});
+  MessageTextSendEvent(
+      {required this.sender,
+      required this.content,
+      required this.conversation});
+}
+
+class MessageImageSendEvent extends MessageEvent {
+  final MessageContent content;
+  final Conversation conversation;
+  final String sender;
+  final File file;
+
+  MessageImageSendEvent(
+      {required this.file,
+      required this.sender,
+      required this.content,
+      required this.conversation});
 }
