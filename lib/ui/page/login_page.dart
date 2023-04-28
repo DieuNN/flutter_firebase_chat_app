@@ -2,9 +2,12 @@ import 'dart:developer';
 
 import 'package:chat_app/blocs/authentication/authentication_bloc.dart';
 import 'package:chat_app/constants/app_constants.dart';
+import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
 import 'package:chat_app/model/enum/social_login_provider.dart';
 import 'package:chat_app/ui/widget/common/form_input_field.dart';
 import 'package:chat_app/utils/keyboard_util.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -41,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthenticationBloc, AuthenticationState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is SignInInProgressState) {
           progressDialog.show(
             backgroundColor: Colors.black,
@@ -55,6 +58,10 @@ class _LoginPageState extends State<LoginPage> {
             "/",
             (route) => false,
           );
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          final user = FirebaseAuth.instance.currentUser!;
+          await FirebaseFirestoreExtensions
+              .updateUserFcmToken(uid: user.uid, newToken: fcmToken!);
         }
         if (state is SignInFailureState) {
           Fluttertoast.showToast(msg: state.exception);

@@ -35,9 +35,6 @@ class _ConversationListState extends State<ConversationList> {
       if (state is ConversationsLoadSuccessState) {
         setState(() {
           conversations = state.conversations;
-          for (var conversation in conversations) {
-            log(conversation.toMap().toString());
-          }
         });
       }
     }, builder: (context, state) {

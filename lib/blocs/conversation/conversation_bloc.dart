@@ -3,8 +3,8 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
 import 'package:chat_app/model/entity/conversation.dart';
-import 'package:chat_app/network/firebase_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 
@@ -25,7 +25,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         emit(ConversationsLoadInProgressState());
         final uid = FirebaseAuth.instance.currentUser!.uid;
         final conversations =
-            await FirebaseFirestore().getConversations(uid: uid);
+            await FirebaseFirestoreExtensions.getConversations(uid: uid);
         emit(ConversationsLoadSuccessState(conversations: conversations));
       } catch (e) {
         log(e.toString());

@@ -1,9 +1,9 @@
-import 'package:chat_app/network/firebase_firestore.dart';
+import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class FirebaseAuthentication {
+extension FirebaseAuthenticationExtensions on FirebaseAuth {
   static Future<User?> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
@@ -21,7 +21,7 @@ class FirebaseAuthentication {
         creationTime: user?.metadata.creationTime?.millisecondsSinceEpoch,
         lastSignInTime:
             user?.metadata.lastSignInTime?.millisecondsSinceEpoch)) {
-      await FirebaseFirestore().initUserData(
+      await FirebaseFirestoreExtensions.initUserData(
         uid: user!.uid,
         email: user.email!,
         photoUrl: user.photoURL,
@@ -57,7 +57,7 @@ class FirebaseAuthentication {
     await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
     var user = FirebaseAuth.instance.currentUser;
-    await FirebaseFirestore().initUserData(
+    await FirebaseFirestoreExtensions.initUserData(
       name: name,
       email: user!.email!,
       uid: user.uid,
@@ -69,6 +69,8 @@ class FirebaseAuthentication {
       required String displayName,
       required String password,
       String? profileUrl}) async {
+    assert(FirebaseAuth.instance.currentUser != null);
+
     await FirebaseAuth.instance.currentUser!.updateEmail(email);
     await FirebaseAuth.instance.currentUser!.updateDisplayName(displayName);
     await FirebaseAuth.instance.currentUser!.updatePassword(password);

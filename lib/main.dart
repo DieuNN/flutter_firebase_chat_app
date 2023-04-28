@@ -6,10 +6,7 @@ import 'package:chat_app/blocs/contact/contact_bloc.dart';
 import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
 import 'package:chat_app/blocs/message/message_bloc.dart';
 import 'package:chat_app/blocs/pages/page_bloc.dart';
-import 'package:chat_app/model/entity/conversation.dart';
-import 'package:chat_app/model/entity/message_content.dart';
-import 'package:chat_app/model/enum/message_type.dart';
-import 'package:chat_app/network/firebase_firestore.dart';
+import 'package:chat_app/firebase_extensions/firebase_messaging.dart';
 import 'package:chat_app/ui/page/add_contact_page.dart';
 import 'package:chat_app/ui/page/message_page.dart';
 import 'package:chat_app/ui/page/home_page.dart';
@@ -17,9 +14,7 @@ import 'package:chat_app/ui/page/login_page.dart';
 import 'package:chat_app/ui/page/sign_up_page.dart';
 import 'package:chat_app/utils/animated_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
+import 'package:firebase_messaging/firebase_messaging.dart' as cloud_messaging;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -27,21 +22,6 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 void main() async {
   var binding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: binding);
-  if (kIsWeb) {
-    FlutterNativeSplash.remove();
-    final firebaseApp = await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: "AIzaSyBr-kiWZQhInKiiW-JFkDqHQlfSGgQGj8U",
-        appId: "1:320497612221:web:614c125424079fd2510ed4",
-        messagingSenderId: "320497612221",
-        storageBucket: "gs://chat-app-e6c8a.appspot.com",
-        projectId: "chat-app-e6c8a",
-      ),
-    );
-    cloud.FirebaseFirestore.instanceFor(app: firebaseApp);
-  }
-  await Firebase.initializeApp();
-
   runApp(const ChatApp());
 }
 

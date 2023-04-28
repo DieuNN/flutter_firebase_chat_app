@@ -1,22 +1,22 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:chat_app/firebase_extensions/firebase_storage.dart';
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/model/entity/message_content.dart';
 import 'package:chat_app/model/enum/message_type.dart';
-import 'package:chat_app/network/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
-import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import '../model/entity/user.dart';
+import '../model/entity/user.dart' as model;
 
-class FirebaseFirestore {
-  final cloud.CollectionReference _userCollection =
-      cloud.FirebaseFirestore.instance.collection("users");
-  final cloud.CollectionReference _conversationsCollection =
-      cloud.FirebaseFirestore.instance.collection("conversations");
+extension FirebaseFirestoreExtensions on FirebaseFirestore {
+  static final CollectionReference _userCollection =
+      FirebaseFirestore.instance.collection("users");
+  static final CollectionReference _conversationsCollection =
+      FirebaseFirestore.instance.collection("conversations");
 
-  Future<void> updateUserProfile(
+  static Future<void> updateUserProfile(
       {required String name,
       required String email,
       String? profilePicture,
@@ -29,13 +29,13 @@ class FirebaseFirestore {
     });
   }
 
-  Future<void> initUserData(
+  static Future<void> initUserData(
       {required String uid,
       required String email,
       required String name,
       String? photoUrl}) async {
-    await auth.FirebaseAuth.instance.currentUser!.updateDisplayName(name);
-    return await _userCollection.doc(uid).set(User(
+    await FirebaseAuth.instance.currentUser!.updateDisplayName(name);
+    return await _userCollection.doc(uid).set(model.User(
           uid: uid,
           creationTime: DateTime.now().toIso8601String(),
           email: email,
@@ -47,16 +47,16 @@ class FirebaseFirestore {
         ).toMap());
   }
 
-  Future<void> updateUserFcmToken(
+  static Future<void> updateUserFcmToken(
       {required String uid, required String newToken}) async {
     return await _userCollection.doc(uid).update({
       "fcmToken": newToken,
     });
   }
 
-  Future<User?> findContact({required String contactEmail}) async {
+  static Future<model.User?> findContact({required String contactEmail}) async {
     try {
-      final currentUserEmail = auth.FirebaseAuth.instance.currentUser!.email;
+      final currentUserEmail = FirebaseAuth.instance.currentUser!.email;
 
       final contactSnapshot = await _userCollection
           .where("email", isEqualTo: contactEmail)
@@ -68,7 +68,7 @@ class FirebaseFirestore {
       }
 
       if (contactSnapshot.docs.first.exists) {
-        final User user = User.fromMap(
+        final model.User user = model.User.fromMap(
             contactSnapshot.docs.first.data() as Map<String, dynamic>);
         return user;
       }
@@ -80,26 +80,26 @@ class FirebaseFirestore {
     }
   }
 
-  Future<void> addContact({required String contactId}) async {
-    final uid = auth.FirebaseAuth.instance.currentUser!.uid;
+  static Future<void> addContact({required String contactId}) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
     if (contactId == uid) {
       Fluttertoast.showToast(msg: "You cannot add yourself to your contacts");
-      throw auth.FirebaseAuthException(code: "self-adding");
+      throw FirebaseAuthException(code: "self-adding");
     }
     await _userCollection.doc(uid).update({
-      "contacts": cloud.FieldValue.arrayUnion([contactId])
+      "contacts": FieldValue.arrayUnion([contactId])
     });
   }
 
-  Future<User?> _getUserInfoByUid(String uid) async {
+  static Future<model.User?> _getUserInfoByUid(String uid) async {
     final snapshot = await _userCollection.doc(uid).get();
     if (!snapshot.exists) {
       return null;
     }
-    return User.fromMap(snapshot.data() as Map<String, dynamic>);
+    return model.User.fromMap(snapshot.data() as Map<String, dynamic>);
   }
 
-  Future<List<String>> _getUserContactIds(String uid) async {
+ static Future<List<String>> _getUserContactIds(String uid) async {
     try {
       var userSnapshots = await _userCollection.doc(uid).get();
       if (userSnapshots.exists) {
@@ -113,14 +113,14 @@ class FirebaseFirestore {
     }
   }
 
-  Future<List<User?>> getUserContacts(String uid) async {
+  static Future<List<model.User?>> getUserContacts(String uid) async {
     List<String> contactIds = await _getUserContactIds(uid);
     try {
       if (contactIds.isEmpty) {
         return [];
       }
 
-      List<User?> result = [];
+      List<model.User?> result = [];
       final userInfoFutures = <Future<dynamic>>[];
       for (var element in contactIds) {
         userInfoFutures.add(_getUserInfoByUid(element));
@@ -139,7 +139,7 @@ class FirebaseFirestore {
     }
   }
 
-  Future<cloud.DocumentReference> _createConversation(
+  static Future<DocumentReference> _createConversation(
       Conversation conversation) async {
     final conversationRef =
         await _conversationsCollection.add(conversation.toMap());
@@ -148,7 +148,7 @@ class FirebaseFirestore {
   }
 
   Future<Conversation?> getConversation(String toUid) async {
-    final String fromUid = auth.FirebaseAuth.instance.currentUser!.uid;
+    final String fromUid = FirebaseAuth.instance.currentUser!.uid;
 
     final snapshot = await _conversationsCollection
         .where("fromUid", isEqualTo: fromUid)
@@ -188,13 +188,13 @@ class FirebaseFirestore {
     }
   }
 
-  Future<List<String>?> _getUserSubscribedGroupIds(String uid) async {
+  static Future<List<String>?> _getUserSubscribedGroupIds(String uid) async {
     final userSnapshots = await _userCollection.doc(uid).get();
     final groupIds = await userSnapshots.get("groups") as List<dynamic>;
     return groupIds.map((e) => e.toString()).toList();
   }
 
-  Future<Conversation?> _getConversationInfo(String? conversationId) async {
+  static Future<Conversation?> _getConversationInfo(String? conversationId) async {
     if (conversationId == null) {
       return null;
     }
@@ -208,7 +208,7 @@ class FirebaseFirestore {
     }
   }
 
-  Future<List<Conversation>> getConversations({required String uid}) async {
+  static Future<List<Conversation>> getConversations({required String uid}) async {
     final result = <Conversation>[];
 
     List<String>? userSubscribedGroupIds =
@@ -232,7 +232,7 @@ class FirebaseFirestore {
       result.sort(
         (first, second) {
           int result = (first.lastMessageTime?.compareTo(
-                  second.lastMessageTime ?? cloud.Timestamp.now())) ??
+                  second.lastMessageTime ?? Timestamp.now())) ??
               0;
           return -result;
         },
@@ -244,7 +244,7 @@ class FirebaseFirestore {
     }
   }
 
-  Future<String?> _getConversationUid(Conversation conversation) async {
+  static Future<String?> _getConversationUid(Conversation conversation) async {
     final snapshots = await _conversationsCollection
         .where("fromUid", isEqualTo: conversation.fromUid)
         .where("toUid", isEqualTo: conversation.toUid)
@@ -266,7 +266,7 @@ class FirebaseFirestore {
     return null;
   }
 
-  Future<void> sendMessage(
+  static Future<void> sendMessage(
       {required MessageContent messageContent,
       required Conversation conversation}) async {
     try {
@@ -293,15 +293,15 @@ class FirebaseFirestore {
     }
   }
 
-  Future<void> _updateConversationLastMessage(
+  static Future<void> _updateConversationLastMessage(
       String ref, String latestMessage) async {
     await _conversationsCollection.doc(ref).update({
       "lastMessage": latestMessage,
-      "lastMessageTime": cloud.Timestamp.now(),
+      "lastMessageTime": Timestamp.now(),
     });
   }
 
-  Future<List<MessageContent>> getMessages(Conversation conversation) async {
+  static Future<List<MessageContent>> getMessages(Conversation conversation) async {
     final result = <MessageContent>[];
 
     try {
@@ -322,7 +322,7 @@ class FirebaseFirestore {
     }
   }
 
-  Future<void> _sendTextMessage({
+  static Future<void> _sendTextMessage({
     required String conversationUid,
     required MessageContent content,
   }) async {
@@ -332,14 +332,14 @@ class FirebaseFirestore {
     await _updateConversationLastMessage(conversationUid, content.content!);
   }
 
-  Future<void> _sendImageMessage({
+  static Future<void> _sendImageMessage({
     required MessageContent content,
     required String conversationUid,
   }) async {
     if (content.file == null) {
       return;
     }
-    final downloadUrl = await FirebaseStorage().uploadImage(content.file!);
+    final downloadUrl = await FirebaseStorageExtensions.uploadImage(content.file!);
     final messagesCollection =
         _conversationsCollection.doc(conversationUid).collection("messages");
     content.content = downloadUrl;
@@ -348,7 +348,7 @@ class FirebaseFirestore {
     await _updateConversationLastMessage(conversationUid, content.content!);
   }
 
-  Future<Stream<cloud.QuerySnapshot<Map<String, dynamic>>>?>
+  static Future<Stream<QuerySnapshot<Map<String, dynamic>>>?>
       getMessagesSnapshots(Conversation conversation) async {
     String? conversationUid = await _getConversationUid(conversation);
 
@@ -363,13 +363,13 @@ class FirebaseFirestore {
         .snapshots();
   }
 
-  Future<void> _subscribeToConversation(
+  static Future<void> _subscribeToConversation(
       Conversation conversation, String conversationUid) async {
     await _userCollection.doc(conversation.fromUid).update({
-      "groups": cloud.FieldValue.arrayUnion([conversationUid])
+      "groups": FieldValue.arrayUnion([conversationUid])
     });
     await _userCollection.doc(conversation.toUid).update({
-      "groups": cloud.FieldValue.arrayUnion([conversationUid])
+      "groups": FieldValue.arrayUnion([conversationUid])
     });
   }
 }

@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:chat_app/firebase_extensions/firebase_authentication.dart';
+import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
+import 'package:chat_app/firebase_extensions/firebase_storage.dart';
 import 'package:chat_app/model/enum/social_login_provider.dart';
-import 'package:chat_app/network/firebase_authentication.dart';
-import 'package:chat_app/network/firebase_firestore.dart';
-import 'package:chat_app/network/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:meta/meta.dart';
@@ -31,11 +31,11 @@ class AuthenticationBloc
       emit(SignInInProgressState());
       try {
         if (event.provider == SocialLoginProvider.email) {
-          await FirebaseAuthentication.signInWithEmailAndPassword(
+          await FirebaseAuthenticationExtensions.signInWithEmailAndPassword(
               event.email!, event.password!);
         }
         if (event.provider == SocialLoginProvider.google) {
-          await FirebaseAuthentication.signInWithGoogle();
+          await FirebaseAuthenticationExtensions.signInWithGoogle();
         }
         emit(SignInSuccessState());
       } on FirebaseAuthException catch (e) {
@@ -47,7 +47,7 @@ class AuthenticationBloc
       (event, emit) async {
         emit(SignOutInProgressState());
         try {
-          FirebaseAuthentication.signOut();
+          FirebaseAuthenticationExtensions.signOut();
           emit(SignOutSuccessState());
         } on FirebaseAuthException catch (e) {
           log("Error when log out: $e");
@@ -59,7 +59,7 @@ class AuthenticationBloc
       (event, emit) async {
         emit(CreateAccountInProgressState());
         try {
-          await FirebaseAuthentication.createUserWithEmailAndPassword(
+          await FirebaseAuthenticationExtensions.createUserWithEmailAndPassword(
             event.email,
             event.password,
             event.name,
@@ -76,24 +76,24 @@ class AuthenticationBloc
       try {
         final uid = FirebaseAuth.instance.currentUser?.uid;
         if (event.file == null) {
-          await FirebaseFirestore().updateUserProfile(
+          await FirebaseFirestoreExtensions.updateUserProfile(
               email: event.email, uid: uid!, name: event.name);
-          await FirebaseAuthentication.updateUserCredential(
+          await FirebaseAuthenticationExtensions.updateUserCredential(
             email: event.email,
             displayName: event.name,
             password: event.password,
           );
         } else {
           var uploadUrl =
-              await FirebaseStorage().uploadAvatar(event.file!, uid!);
+              await FirebaseStorageExtensions.uploadAvatar(event.file!, uid!);
           log("Image uploaded at: $uploadUrl");
-          await FirebaseAuthentication.updateUserCredential(
+          await FirebaseAuthenticationExtensions.updateUserCredential(
             email: event.email,
             displayName: event.name,
             password: event.password,
             profileUrl: uploadUrl,
           );
-          await FirebaseFirestore().updateUserProfile(
+          await FirebaseFirestoreExtensions.updateUserProfile(
             email: event.email,
             uid: uid,
             name: event.name,

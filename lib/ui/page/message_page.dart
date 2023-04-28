@@ -9,7 +9,6 @@ import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/model/entity/message_content.dart';
 import 'package:chat_app/model/enum/message_alignment.dart';
 import 'package:chat_app/model/enum/message_type.dart';
-import 'package:chat_app/network/firebase_firestore.dart';
 import 'package:chat_app/ui/widget/common/form_input_field.dart';
 import 'package:chat_app/ui/widget/common/user_avatar.dart';
 import 'package:chat_app/ui/widget/message_page/message_item.dart';
@@ -38,27 +37,6 @@ class _ConversationPageState extends State<ConversationPage> {
   final String senderUid = FirebaseAuth.instance.currentUser!.uid;
   Stream<cloud.QuerySnapshot<Map<String, dynamic>>>? snapshot;
   ImagePicker picker = ImagePicker();
-
-  // List<MessageContent> fakeMessages = [
-  //   MessageContent(
-  //     content: "https://images.unsplash.com/flagged/photo-1557427161-4701a0fa2f42?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8Mnx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=60",
-  //     type: "image",
-  //     timeStamp: cloud.Timestamp.now(),
-  //     senderUid: "gPko4rYpQsdeQ3IL1OeopFExFCS2",
-  //   ),
-  //   MessageContent(
-  //     content: "https://images.unsplash.com/flagged/photo-1557427161-4701a0fa2f42?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8Mnx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=60",
-  //     type: "image",
-  //     timeStamp: cloud.Timestamp.now(),
-  //     senderUid: "gPko4rYpQsdeQ3IL1OeopFExFCS2",
-  //   ),
-  //   MessageContent(
-  //     content: "https://images.unsplash.com/flagged/photo-1557427161-4701a0fa2f42?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8Mnx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=60",
-  //     type: "image",
-  //     timeStamp: cloud.Timestamp.now(),
-  //     senderUid: "gPko4rYpQsdeQ3IL1OeopFExFCS2",
-  //   ),
-  // ];
 
   @override
   void initState() {
@@ -157,15 +135,6 @@ class _ConversationPageState extends State<ConversationPage> {
         content: e.content,
       );
     }).toList();
-    // List<Widget> fakeMessageWidgets = fakeMessages.map((e) {
-    //   return MessageItem(
-    //     alignment: senderUid == e.senderUid
-    //         ? MessageAlignment.right
-    //         : MessageAlignment.left,
-    //     type: e.type == "text" ? MessageType.text : MessageType.image,
-    //     content: e.content,
-    //   );
-    // }).toList();
     return BlocConsumer<MessageBloc, MessageState>(
       listener: (context, state) async {
         if (state is MessagesLoadSuccessState) {
@@ -359,8 +328,6 @@ class _ConversationPageState extends State<ConversationPage> {
                 navigator.pop();
               },
             ),
-            // idk why we need 1 more list tile, if not it wouldn't work
-            const ListTile(),
           ],
         );
       },

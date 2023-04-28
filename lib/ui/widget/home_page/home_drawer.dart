@@ -1,6 +1,6 @@
 import 'package:chat_app/blocs/pages/page_bloc.dart';
 import 'package:chat_app/constants/app_constants.dart';
-import 'package:chat_app/network/firebase_authentication.dart';
+import 'package:chat_app/firebase_extensions/firebase_authentication.dart';
 import 'package:chat_app/ui/widget/common/user_avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -104,7 +104,7 @@ class HomeDrawer extends StatelessWidget {
         style: TextStyle(color: Colors.white),
       ),
       onTap: () {
-        FirebaseAuthentication.signOut();
+        FirebaseAuthenticationExtensions.signOut();
         Fluttertoast.showToast(msg: "Sign out successful");
         Navigator.popAndPushNamed(context, "/login");
       },

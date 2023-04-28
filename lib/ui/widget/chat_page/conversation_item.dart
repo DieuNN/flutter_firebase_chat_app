@@ -65,7 +65,9 @@ class ConversationItem extends StatelessWidget {
       subtitle: conversation.lastMessage != null
           ? Text(
               maxLines: 1,
-              conversation.lastMessage!,
+              conversation.lastMessage!.contains("alt=media")
+                  ? "Has sent a media file"
+                  : conversation.lastMessage!,
               style: const TextStyle(
                   overflow: TextOverflow.ellipsis,
                   color: Colors.white,

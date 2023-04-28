@@ -8,7 +8,7 @@ class ContactInitial extends ContactState {}
 class ContactSearchInProgressState extends ContactState {}
 
 class ContactSearchSuccessState extends ContactState {
-  final entity.User? user;
+  final model.User? user;
 
   ContactSearchSuccessState({required this.user});
 }
@@ -34,7 +34,7 @@ class LoadContactsInProgressState extends ContactState {}
 class RefreshContactsInProgressState extends ContactState {}
 
 class RefreshContactsSuccessState extends ContactState {
-  final List<entity.User> users;
+  final List<model.User> users;
 
   RefreshContactsSuccessState({required this.users});
 }
@@ -46,7 +46,7 @@ class RefreshContactsFailureState extends ContactState {
 }
 
 class LoadContactsSuccessState extends ContactState {
-  final List<entity.User?> contacts;
+  final List<model.User?> contacts;
 
   LoadContactsSuccessState({required this.contacts});
 }

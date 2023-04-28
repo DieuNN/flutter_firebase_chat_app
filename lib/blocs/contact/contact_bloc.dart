@@ -3,8 +3,8 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:chat_app/model/entity/user.dart' as entity;
-import 'package:chat_app/network/firebase_firestore.dart' as cloud;
+import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
+import 'package:chat_app/model/entity/user.dart' as model;
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:meta/meta.dart';
 
@@ -24,7 +24,7 @@ class ContactBloc extends Bloc<ContactEvent, ContactState> {
       try {
         log("Contact loading");
         final uid = auth.FirebaseAuth.instance.currentUser!.uid;
-        final contacts = await cloud.FirebaseFirestore().getUserContacts(uid);
+        final contacts = await FirebaseFirestoreExtensions.getUserContacts(uid);
         emit(LoadContactsSuccessState(contacts: contacts));
         log("Contact loaded");
       } catch (e) {
@@ -36,7 +36,7 @@ class ContactBloc extends Bloc<ContactEvent, ContactState> {
       emit(ContactSearchInProgressState());
       log("Searching contacts: ");
       try {
-        final result = await cloud.FirebaseFirestore()
+        final result = await FirebaseFirestoreExtensions
             .findContact(contactEmail: event.keyword);
         emit(ContactSearchSuccessState(user: result));
       } catch (e) {
@@ -47,7 +47,7 @@ class ContactBloc extends Bloc<ContactEvent, ContactState> {
     on<AddContactEvent>((event, emit) async {
       emit(AddContactInProgressState());
       try {
-        await cloud.FirebaseFirestore().addContact(contactId: event.contactId);
+        await FirebaseFirestoreExtensions.addContact(contactId: event.contactId);
         emit(AddContactSuccessState());
       } catch (e) {
         emit(AddContactFailureState(errorMessage: e.toString()));

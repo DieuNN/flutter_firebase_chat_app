@@ -4,11 +4,10 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/model/entity/message_content.dart';
 import 'package:chat_app/model/enum/message_type.dart';
-import 'package:chat_app/network/firebase_firestore.dart';
-import 'package:chat_app/network/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
 import 'package:meta/meta.dart';
 
@@ -25,9 +24,9 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
       emit(MessagesLoadInProgressState());
       try {
         final messages =
-            await FirebaseFirestore().getMessages(event.conversation);
+            await FirebaseFirestoreExtensions.getMessages(event.conversation);
         final snapshot =
-            await FirebaseFirestore().getMessagesSnapshots(event.conversation);
+            await FirebaseFirestoreExtensions.getMessagesSnapshots(event.conversation);
         emit(MessagesLoadSuccessState(messages: messages, snapshot: snapshot));
       } catch (e) {
         log(e.toString());
@@ -38,7 +37,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     on<MessageTextSendEvent>((event, emit) async {
       emit(MessageTextSendInProgressState());
       try {
-        await FirebaseFirestore().sendMessage(
+        await FirebaseFirestoreExtensions.sendMessage(
             messageContent: MessageContent(
               timeStamp: cloud.Timestamp.now(),
               content: event.content,
@@ -47,7 +46,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
             ),
             conversation: event.conversation);
         final snapshot =
-            await FirebaseFirestore().getMessagesSnapshots(event.conversation);
+            await FirebaseFirestoreExtensions.getMessagesSnapshots(event.conversation);
         emit(MessageTextSendSuccessState(snapshot: snapshot));
       } catch (e) {
         log(e.toString());
@@ -57,12 +56,12 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     on<MessageImageSendEvent>((event, emit) async {
       emit(MessageImageSendInProgressState());
       try {
-        await FirebaseFirestore().sendMessage(
+        await FirebaseFirestoreExtensions.sendMessage(
           conversation: event.conversation,
           messageContent: event.content,
         );
         final snapshot =
-            await FirebaseFirestore().getMessagesSnapshots(event.conversation);
+            await FirebaseFirestoreExtensions.getMessagesSnapshots(event.conversation);
         emit(MessageImageSendSuccessState(snapshot: snapshot));
       } catch (e) {
         log(e.toString());
