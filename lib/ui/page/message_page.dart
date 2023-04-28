@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:developer' as dart_dev;
 import 'dart:math' as dart_math;
@@ -13,6 +14,7 @@ import 'package:chat_app/ui/widget/common/form_input_field.dart';
 import 'package:chat_app/ui/widget/common/user_avatar.dart';
 import 'package:chat_app/ui/widget/message_page/message_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -37,6 +39,7 @@ class _ConversationPageState extends State<ConversationPage> {
   final String senderUid = FirebaseAuth.instance.currentUser!.uid;
   Stream<cloud.QuerySnapshot<Map<String, dynamic>>>? snapshot;
   ImagePicker picker = ImagePicker();
+  StreamSubscription<dynamic>? streamSubscription;
 
   @override
   void initState() {
@@ -51,6 +54,20 @@ class _ConversationPageState extends State<ConversationPage> {
         .read<MessageBloc>()
         .add(MessageLoadEvent(conversation: conversationInfo));
     super.didChangeDependencies();
+  }
+
+  // https://github.com/flutter/flutter/issues/64935
+  @override
+  Future<void> dispose() async {
+    Future.delayed(
+      const Duration(seconds: 0),
+      () async {
+        messageInputController.clear();
+        await snapshot?.drain();
+        await streamSubscription?.cancel();
+      },
+    );
+    super.dispose();
   }
 
   @override
@@ -81,7 +98,7 @@ class _ConversationPageState extends State<ConversationPage> {
             ],
           ),
           body: FooterLayout(
-            child: _buildPageBody(),
+            child: buildPageBody(),
             footer: SafeArea(child: buildMessageInput()),
           ),
         ),
@@ -125,13 +142,14 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  _buildPageBody() {
+  buildPageBody() {
     List<Widget> messageWidgets = messages.map((e) {
       return MessageItem(
+        key: UniqueKey(),
         alignment: senderUid == e.senderUid
             ? MessageAlignment.right
             : MessageAlignment.left,
-            type: e.type == "text" ? MessageType.text : MessageType.image,
+        type: e.type == "text" ? MessageType.text : MessageType.image,
         content: e.content,
       );
     }).toList();
@@ -141,33 +159,34 @@ class _ConversationPageState extends State<ConversationPage> {
           setState(() {
             messages = state.messages;
             snapshot ??= state.snapshot;
-            addMessageSnapshotsListener();
+            dart_dev
+                .log("Snapshot hashcode - Load message: ${snapshot.hashCode}");
           });
-          if (state is MessageTextSendSuccessState) {
-            Fluttertoast.showToast(msg: "Sent!");
-          }
+          addMessageSnapshotsListener();
         }
         if (state is MessageTextSendSuccessState) {
           setState(() {
             snapshot ??= state.snapshot;
-            addMessageSnapshotsListener();
+            dart_dev
+                .log("Snapshot hashcode - Send message: ${snapshot.hashCode}");
           });
+          addMessageSnapshotsListener();
         }
       },
       builder: (context, state) {
+        if (state is MessagesLoadInProgressState) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              backgroundColor: Colors.black,
+            ),
+          );
+        }
         return ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
           reverse: true,
           padding: const EdgeInsets.only(left: 16, right: 16),
           itemBuilder: (BuildContext context, int index) {
-            if (state is MessagesLoadInProgressState) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  backgroundColor: Colors.black,
-                ),
-              );
-            }
             return messageWidgets[index];
           },
           separatorBuilder: (BuildContext context, int index) {
@@ -254,30 +273,40 @@ class _ConversationPageState extends State<ConversationPage> {
 
     context.read<MessageBloc>().add(
           MessageTextSendEvent(
-              content: messageInputController.text,
-              conversation: conversationInfo,
-              sender: senderUid),
+            content: messageInputController.text,
+            conversation: conversationInfo,
+            sender: senderUid,
+          ),
         );
-
-    if (snapshot == null) {
-      dart_dev.log("Init snapshot");
-      setState(() {
-        addMessageSnapshotsListener();
-      });
-    }
+    addMessageSnapshotsListener();
     messageInputController.text = "";
   }
 
-  addMessageSnapshotsListener() async {
-    snapshot?.listen((event) {
-      List<MessageContent> newMessages = [];
-      for (var element in event.docs) {
-        newMessages.add(MessageContent.fromJson(element.data()));
-      }
+  int count = 0;
+
+  void addMessageSnapshotsListener() async {
+    count++;
+    dart_dev.log("Add message listener $count");
+
+    if (snapshot == null) {
+      return;
+    }
+
+    if (streamSubscription != null) {
+      return;
+    }
+
+
+    streamSubscription = snapshot!.listen((event) {
+    });
+
+    streamSubscription!.onData((data) {
       setState(() {
-        messages = newMessages;
+        messages = (data as QuerySnapshot<Map<String, dynamic>>).docs.map((e) => MessageContent.fromJson(e.data())).toList();
       });
     });
+
+
   }
 
   showImagePickBottomSheet() {

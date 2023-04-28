@@ -4,12 +4,11 @@ import 'package:chat_app/firebase_extensions/firebase_app.dart';
 import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 
 extension FirebaseMessagingExtensions on  FirebaseMessaging {
-  static void initFirebaseMessaging() async {
+  static Future<void> initFirebaseMessaging() async {
     await FirebaseAppExtensions.ensureInitialized();
     FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
       log(token);
