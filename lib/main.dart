@@ -13,15 +13,16 @@ import 'package:chat_app/ui/page/home_page.dart';
 import 'package:chat_app/ui/page/login_page.dart';
 import 'package:chat_app/ui/page/sign_up_page.dart';
 import 'package:chat_app/utils/animated_route.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
-import 'package:firebase_messaging/firebase_messaging.dart' as cloud_messaging;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void main() async {
   var binding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: binding);
+  await dotenv.load(fileName: ".env");
   runApp(const ChatApp());
 }
 
@@ -71,6 +72,8 @@ class ChatApp extends StatelessWidget {
         builder: (context, state) {
           if (state is AppInitialSuccessState) {
             FlutterNativeSplash.remove();
+            FirebaseMessagingExtensions.addMessageListener(
+                uid: FirebaseAuth.instance.currentUser?.uid);
             return MaterialApp(
               title: 'Flutter Demo',
               theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),

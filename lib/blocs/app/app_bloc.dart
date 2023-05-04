@@ -5,10 +5,6 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:chat_app/firebase_extensions/firebase_app.dart';
 import 'package:chat_app/firebase_extensions/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart' as cloud_messaging;
-import 'package:cloud_firestore/cloud_firestore.dart' as cloud_firestore;
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:flutter/foundation.dart';
 

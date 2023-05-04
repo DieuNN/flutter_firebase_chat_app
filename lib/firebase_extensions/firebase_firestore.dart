@@ -91,7 +91,7 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
     });
   }
 
-  static Future<model.User?> _getUserInfoByUid(String uid) async {
+  static Future<model.User?> getUserInfoByUid(String uid) async {
     final snapshot = await _userCollection.doc(uid).get();
     if (!snapshot.exists) {
       return null;
@@ -99,7 +99,7 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
     return model.User.fromMap(snapshot.data() as Map<String, dynamic>);
   }
 
- static Future<List<String>> _getUserContactIds(String uid) async {
+  static Future<List<String>> _getUserContactIds(String uid) async {
     try {
       var userSnapshots = await _userCollection.doc(uid).get();
       if (userSnapshots.exists) {
@@ -123,7 +123,7 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
       List<model.User?> result = [];
       final userInfoFutures = <Future<dynamic>>[];
       for (var element in contactIds) {
-        userInfoFutures.add(_getUserInfoByUid(element));
+        userInfoFutures.add(getUserInfoByUid(element));
       }
 
       final userInfoList = await Future.wait(userInfoFutures);
@@ -158,8 +158,8 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
         .where("fromUid", isEqualTo: toUid)
         .where("toUid", isEqualTo: fromUid)
         .get();
-    final fromUser = await _getUserInfoByUid(fromUid);
-    final toUser = await _getUserInfoByUid(toUid);
+    final fromUser = await getUserInfoByUid(fromUid);
+    final toUser = await getUserInfoByUid(toUid);
     if (fromUser == null || toUser == null) {
       return null;
     }
@@ -188,13 +188,17 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
     }
   }
 
-  static Future<List<String>?> _getUserSubscribedGroupIds(String uid) async {
+  static Future<List<String>?> getUserSubscribedGroupIds(String? uid) async {
+    if (uid == null) {
+      return [];
+    }
     final userSnapshots = await _userCollection.doc(uid).get();
     final groupIds = await userSnapshots.get("groups") as List<dynamic>;
     return groupIds.map((e) => e.toString()).toList();
   }
 
-  static Future<Conversation?> _getConversationInfo(String? conversationId) async {
+  static Future<Conversation?> _getConversationInfo(
+      String? conversationId) async {
     if (conversationId == null) {
       return null;
     }
@@ -208,11 +212,11 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
     }
   }
 
-  static Future<List<Conversation>> getConversations({required String uid}) async {
+  static Future<List<Conversation>> getConversations(
+      {required String uid}) async {
     final result = <Conversation>[];
 
-    List<String>? userSubscribedGroupIds =
-        await _getUserSubscribedGroupIds(uid);
+    List<String>? userSubscribedGroupIds = await getUserSubscribedGroupIds(uid);
     if (userSubscribedGroupIds == null || userSubscribedGroupIds.isEmpty) {
       return [];
     }
@@ -231,8 +235,8 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
 
       result.sort(
         (first, second) {
-          int result = (first.lastMessageTime?.compareTo(
-                  second.lastMessageTime ?? Timestamp.now())) ??
+          int result = (first.lastMessageTime
+                  ?.compareTo(second.lastMessageTime ?? Timestamp.now())) ??
               0;
           return -result;
         },
@@ -301,7 +305,8 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
     });
   }
 
-  static Future<List<MessageContent>> getMessages(Conversation conversation) async {
+  static Future<List<MessageContent>> getMessages(
+      Conversation conversation) async {
     final result = <MessageContent>[];
 
     try {
@@ -339,7 +344,8 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
     if (content.file == null) {
       return;
     }
-    final downloadUrl = await FirebaseStorageExtensions.uploadImage(content.file!);
+    final downloadUrl =
+        await FirebaseStorageExtensions.uploadImage(content.file!);
     final messagesCollection =
         _conversationsCollection.doc(conversationUid).collection("messages");
     content.content = downloadUrl;
