@@ -296,17 +296,16 @@ class _ConversationPageState extends State<ConversationPage> {
       return;
     }
 
-
-    streamSubscription = snapshot!.listen((event) {
-    });
+    streamSubscription = snapshot!.listen((event) {});
 
     streamSubscription!.onData((data) {
       setState(() {
-        messages = (data as QuerySnapshot<Map<String, dynamic>>).docs.map((e) => MessageContent.fromJson(e.data())).toList();
+        messages = (data as QuerySnapshot<Map<String, dynamic>>)
+            .docs
+            .map((e) => MessageContent.fromJson(e.data()))
+            .toList();
       });
     });
-
-
   }
 
   showImagePickBottomSheet() {
