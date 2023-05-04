@@ -57,6 +57,10 @@ dependencies:
   firebase_messaging: ^14.4.1
   keyboard_attachable: ^2.1.0
   easy_image_viewer: ^1.2.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_local_notifications: ^14.0.0+1
+  flutter_dotenv: ^5.0.2
+  http: ^0.13.6
 
 
 dev_dependencies:
@@ -84,6 +88,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -113,3 +118,12 @@ flutter:
 flutter_native_splash:
   image: assets/images/app_logo.png
   color: "#000000"
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_logo.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/images/app_logo.png"
+    background_color: "#000000"
