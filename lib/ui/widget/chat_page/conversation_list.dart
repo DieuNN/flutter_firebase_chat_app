@@ -18,12 +18,15 @@ class ConversationList extends StatefulWidget {
 
 class _ConversationListState extends State<ConversationList> {
   List<Conversation> conversations = [];
-  final String uid = FirebaseAuth.instance.currentUser!.uid;
+  final String? uid = FirebaseAuth.instance.currentUser?.uid;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    context.read<ConversationBloc>().add(ConversationsLoadEvent(uid: uid));
+    if(uid == null) {
+      return;
+    }
+    context.read<ConversationBloc>().add(ConversationsLoadEvent(uid: uid!));
   }
 
   @override

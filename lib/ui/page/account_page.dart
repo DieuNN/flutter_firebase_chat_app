@@ -222,6 +222,10 @@ class _AccountPageState extends State<AccountPage> {
                 color: Colors.white,
               ),
               onPressed: () {
+                if(Platform.isIOS) {
+                  Fluttertoast.showToast(msg: "Image picker doesn't support on iOS yet");
+                  return;
+                }
                 showImagePickBottomSheet();
               },
             ),

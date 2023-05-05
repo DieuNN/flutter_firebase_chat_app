@@ -382,30 +382,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.2"
-  flutter_facebook_auth:
-    dependency: "direct main"
-    description:
-      name: flutter_facebook_auth
-      sha256: "865752fb264e18f5246626d0cc8c1b6b5217cba8fa12f6704204c471695913b9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.8"
-  flutter_facebook_auth_platform_interface:
-    dependency: transitive
-    description:
-      name: flutter_facebook_auth_platform_interface
-      sha256: "0bc5fefc89b012635c4424a34334215e81e0ff38c5b413f869fd9c14a10c6135"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.1"
-  flutter_facebook_auth_web:
-    dependency: transitive
-    description:
-      name: flutter_facebook_auth_web
-      sha256: "6dfd4a3844137fbf7eb4c8d753add1ca15233b280a73a3360d9af46b87680678"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.1"
   flutter_keyboard_visibility:
     dependency: transitive
     description:

@@ -285,8 +285,6 @@ class _ConversationPageState extends State<ConversationPage> {
   int count = 0;
 
   void addMessageSnapshotsListener() async {
-    count++;
-    dart_dev.log("Add message listener $count");
 
     if (snapshot == null) {
       return;
@@ -323,9 +321,14 @@ class _ConversationPageState extends State<ConversationPage> {
                 style: TextStyle(color: AppConstants.primaryColor),
               ),
               onTap: () async {
+                if(Platform.isIOS) {
+                  Fluttertoast.showToast(msg: "Image picker error on iOS");
+                  return;
+                }
                 var navigator = Navigator.of(context);
                 final XFile? image =
-                    await picker.pickImage(source: ImageSource.gallery);
+                    await picker.pickImage(source: ImageSource.gallery, requestFullMetadata: true);
+                dart_dev.log(image.toString());
                 setState(() {
                   if (image == null) {
                     return;

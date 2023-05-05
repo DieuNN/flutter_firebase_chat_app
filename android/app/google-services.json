@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "320497612221",
+    "firebase_url": "https://chat-app-e6c8a-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "chat-app-e6c8a",
     "storage_bucket": "chat-app-e6c8a.appspot.com"
   },
@@ -14,15 +15,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "320497612221-7rk2d03cdu4hkj54vdca1jgefvuh985q.apps.googleusercontent.com",
+          "client_id": "320497612221-7nk7qu1p3gmlv6j6auqk4tr5ne3rf9es.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.dieu.chat_app",
-            "certificate_hash": "c8e4c2db86eb9888bd90e69e5b9839f162091507"
+            "certificate_hash": "864addadc5c2b838b4f7bcc5e52d46b91b67ab54"
           }
         },
         {
-          "client_id": "320497612221-9li7itqhj6ca4dnac058ur3iqe7iqvi4.apps.googleusercontent.com",
+          "client_id": "320497612221-trfi24ac93t6jbovfdb7s3mu292jjcm9.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -37,6 +38,13 @@
             {
               "client_id": "320497612221-9li7itqhj6ca4dnac058ur3iqe7iqvi4.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "320497612221-hcektasj8d3v7r3squ6f7d497e3cue2n.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dieu.chat-app"
+              }
             }
           ]
         }

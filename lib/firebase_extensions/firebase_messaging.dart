@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:developer';
 
+import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
 import 'package:chat_app/firebase_extensions/firebase_app.dart';
 import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
+import 'package:chat_app/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
@@ -37,53 +40,76 @@ extension FirebaseMessagingExtensions on FirebaseMessaging {
   static Future<void> _initLocalMessaging() async {
     await flutterLocalNotificationsPlugin.initialize(
       const InitializationSettings(
-        android: AndroidInitializationSettings("app_logo"),
-      ),
+          android: AndroidInitializationSettings("app_logo"),
+          iOS: DarwinInitializationSettings()),
       onDidReceiveNotificationResponse: (details) {},
     );
   }
 
   static Future<void> showNotification(
       {required String title, required String message}) async {
-    const detail = AndroidNotificationDetails("...", "...");
-    const notificationDetails = NotificationDetails(android: detail);
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    appKey.currentContext!
+        .read<ConversationBloc>()
+        .add(ConversationsLoadEvent(uid: uid!));
+    const androidDetail = AndroidNotificationDetails("...", "...");
+    const iosDetail = DarwinNotificationDetails(
+      subtitle: "Subtitle",
+    );
+    const notificationDetails =
+        NotificationDetails(android: androidDetail, iOS: iosDetail);
     await flutterLocalNotificationsPlugin.show(
       0,
       title,
       message,
       notificationDetails,
     );
+
+
   }
 
-  static void _sendPushNotification(
-      {required String fromUid,
-      required String toUid,
+  static void sendPushNotification(
+      {required String? fromUid,
+      required String? toUid,
       required String title,
       required String message}) async {
-    final userInfo = await FirebaseFirestoreExtensions.getUserInfoByUid(toUid);
+    if (toUid == null) {
+      return;
+    }
+    model.User? userInfo;
+    if (fromUid == FirebaseAuth.instance.currentUser?.uid) {
+      userInfo = await FirebaseFirestoreExtensions.getUserInfoByUid(toUid);
+      log("A");
+    } else {
+      log("B");
+      userInfo = await FirebaseFirestoreExtensions.getUserInfoByUid(fromUid!);
+    }
+
+    if (userInfo == null) {
+      return;
+    }
     final body = {
       "data": {
         "title": title,
         "message": message,
       },
-      "to": userInfo?.fcmToken
+      "to": userInfo.fcmToken
     };
+    log(jsonEncode(body));
     final client = http.Client();
-    await client.post(Uri.parse(dotenv.env['FCM_URL']!), body: body, headers: {
-      'Content-type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': 'key=${dotenv.env['FCM_URL']}'
-    });
-  }
-
-  static Future<void> addMessageListener({String? uid}) async {
-    if (uid == null) {
-      return;
-    }
+    final result = await client.post(Uri.parse(dotenv.env['FCM_URL']!),
+        body: jsonEncode(body),
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'key=${dotenv.env['SERVER_KEY']}'
+        });
+    log(result.body);
   }
 }
 
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  log("Handling a background message: ${message.messageId}");
+  await FirebaseAppExtensions.ensureInitialized();
+  FirebaseMessagingExtensions.showNotification(
+      title: message.data['title'], message: message.data['title']);
 }
