@@ -5,6 +5,7 @@ import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
 import 'package:chat_app/firebase_extensions/firebase_app.dart';
 import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
 import 'package:chat_app/main.dart';
+import 'package:chat_app/model/entity/conversation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -49,6 +50,7 @@ extension FirebaseMessagingExtensions on FirebaseMessaging {
 
   static Future<void> showNotification(
       {required String title, required String message}) async {
+    // We need a real device to push notification on IOS
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (appKey.currentContext != null) {
       appKey.currentContext!
@@ -69,43 +71,53 @@ extension FirebaseMessagingExtensions on FirebaseMessaging {
     );
   }
 
-  static void sendPushNotification(
-      {required String? fromUid,
-      required String? toUid,
-      required String title,
+  static void postFCMRequest(
+      {required String title,
+      Conversation? conversation,
       required String message}) async {
-    if (toUid == null) {
+    if (conversation == null) {
       return;
     }
+
+    if (conversation.toUid == null || conversation.fromUid == null) {
+      return;
+    }
+
+    // Determine if current uid is the same as sender uid, if it is, get receiver info and request Firebase
+    // to send notification for receiver
+
     model.User? userInfo;
-    if (fromUid == FirebaseAuth.instance.currentUser?.uid) {
-      userInfo = await FirebaseFirestoreExtensions.getUserInfoByUid(toUid);
-      log("A");
+    if (conversation.fromUid == FirebaseAuth.instance.currentUser?.uid) {
+      userInfo = await FirebaseFirestoreExtensions.getUserInfoByUid(
+          conversation.toUid!);
     } else {
-      log("B");
-      userInfo = await FirebaseFirestoreExtensions.getUserInfoByUid(fromUid!);
+      userInfo = await FirebaseFirestoreExtensions.getUserInfoByUid(
+          conversation.fromUid!);
     }
 
     if (userInfo == null) {
       return;
     }
-    final body = {
+
+    final requestBody = {
       "data": {
         "title": title,
         "message": message,
       },
       "to": userInfo.fcmToken
     };
-    log(jsonEncode(body));
-    final client = http.Client();
-    final result = await client.post(Uri.parse(dotenv.env['FCM_URL']!),
-        body: jsonEncode(body),
-        headers: {
-          'Content-type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'key=${dotenv.env['SERVER_KEY']}'
-        });
-    log(result.body);
+
+    final requestHeader = {
+      'Content-type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'key=${dotenv.env['SERVER_KEY']}'
+    };
+
+    await http.Client().post(
+      Uri.parse(dotenv.env['FCM_URL']!),
+      body: jsonEncode(requestBody),
+      headers: requestHeader,
+    );
   }
 }
 

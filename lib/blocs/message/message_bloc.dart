@@ -50,21 +50,13 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
             conversation: event.conversation);
         final snapshot = await FirebaseFirestoreExtensions.getMessagesSnapshots(
             event.conversation);
-        final currentUid = FirebaseAuth.instance.currentUser!.uid;
-        if (currentUid != event.conversation.fromUid) {
-          FirebaseMessagingExtensions.sendPushNotification(
-              fromUid: event.conversation.fromUid,
-              toUid: event.conversation.toUid,
-              title: event.conversation.toName ?? "New message",
-              message: event.content);
-        } else {
-          FirebaseMessagingExtensions.sendPushNotification(
-              toUid: event.conversation.fromUid,
-              fromUid: event.conversation.toUid,
-              title: event.conversation.fromName ?? "New message",
-              message: event.content);
-        }
+
         emit(MessageTextSendSuccessState(snapshot: snapshot));
+
+        FirebaseMessagingExtensions.postFCMRequest(
+            conversation: event.conversation,
+            title: event.conversation.toName ?? "New message",
+            message: event.content);
       } catch (e) {
         log(e.toString());
         emit(MessageTextSendFailureState(error: e.toString()));
@@ -79,22 +71,13 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
         );
         final snapshot = await FirebaseFirestoreExtensions.getMessagesSnapshots(
             event.conversation);
-        final currentUid = FirebaseAuth.instance.currentUser!.uid;
-        if (currentUid != event.conversation.fromUid) {
-          FirebaseMessagingExtensions.sendPushNotification(
-              fromUid: event.conversation.fromUid,
-              toUid: event.conversation.toUid,
-              title: event.conversation.fromName ?? "New message",
-              message: event.content.content ?? "Has sent an image");
-        } else {
-          FirebaseMessagingExtensions.sendPushNotification(
-              toUid: event.conversation.fromUid,
-              fromUid: event.conversation.toUid,
-              title: event.conversation.toName ?? "New message",
-              message: event.content.content ?? "Has sent an image");
-        }
 
         emit(MessageImageSendSuccessState(snapshot: snapshot));
+
+        FirebaseMessagingExtensions.postFCMRequest(
+            conversation: event.conversation,
+            title: event.conversation.fromName ?? "New message",
+            message: event.content.content ?? "Has sent an image");
       } catch (e) {
         log(e.toString());
         emit(MessageImageSendFailureState(error: e.toString()));
