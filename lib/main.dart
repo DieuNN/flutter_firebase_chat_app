@@ -19,6 +19,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
+final appKey = GlobalKey<NavigatorState>();
+
 void main() async {
   var binding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: binding);
@@ -72,9 +74,8 @@ class ChatApp extends StatelessWidget {
         builder: (context, state) {
           if (state is AppInitialSuccessState) {
             FlutterNativeSplash.remove();
-            FirebaseMessagingExtensions.addMessageListener(
-                uid: FirebaseAuth.instance.currentUser?.uid);
             return MaterialApp(
+              navigatorKey: appKey,
               title: 'Flutter Demo',
               theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
               initialRoute: state.user == null ? "/login" : "/",

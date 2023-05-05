@@ -19,16 +19,7 @@ extension FirebaseAppExtensions on FirebaseApp {
   }
 
   static Future<void> _initFirebaseMobileApp() async {
-    if(Platform.isAndroid) {
-
-    }
     await Firebase.initializeApp();
-  }
-
-  static Future<void> _initAndroidFirebaseApp() async {
-
-
-
   }
 
   static Future<void> _initFirebaseWebApp() async {
