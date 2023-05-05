@@ -35,6 +35,7 @@ extension FirebaseMessagingExtensions on FirebaseMessaging {
       showNotification(
           title: event.data['title'], message: event.data['message']);
     });
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
 
   static Future<void> _initLocalMessaging() async {
@@ -49,9 +50,11 @@ extension FirebaseMessagingExtensions on FirebaseMessaging {
   static Future<void> showNotification(
       {required String title, required String message}) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    appKey.currentContext!
-        .read<ConversationBloc>()
-        .add(ConversationsLoadEvent(uid: uid!));
+    if (appKey.currentContext != null) {
+      appKey.currentContext!
+          .read<ConversationBloc>()
+          .add(ConversationsLoadEvent(uid: uid!));
+    }
     const androidDetail = AndroidNotificationDetails("...", "...");
     const iosDetail = DarwinNotificationDetails(
       subtitle: "Subtitle",
@@ -64,8 +67,6 @@ extension FirebaseMessagingExtensions on FirebaseMessaging {
       message,
       notificationDetails,
     );
-
-
   }
 
   static void sendPushNotification(
@@ -111,5 +112,5 @@ extension FirebaseMessagingExtensions on FirebaseMessaging {
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await FirebaseAppExtensions.ensureInitialized();
   FirebaseMessagingExtensions.showNotification(
-      title: message.data['title'], message: message.data['title']);
+      title: message.data['title'], message: message.data['message']);
 }
