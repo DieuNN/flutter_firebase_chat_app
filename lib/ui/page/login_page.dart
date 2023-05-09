@@ -1,8 +1,7 @@
-import 'dart:developer';
 
 import 'package:chat_app/blocs/authentication/authentication_bloc.dart';
 import 'package:chat_app/constants/app_constants.dart';
-import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_firestore.dart';
 import 'package:chat_app/model/enum/social_login_provider.dart';
 import 'package:chat_app/ui/widget/common/form_input_field.dart';
 import 'package:chat_app/utils/keyboard_util.dart';

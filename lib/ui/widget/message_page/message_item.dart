@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/constants/app_constants.dart';
@@ -6,6 +5,7 @@ import 'package:chat_app/model/enum/message_alignment.dart';
 import 'package:chat_app/model/enum/message_type.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 
 class MessageItem extends StatelessWidget {
   const MessageItem(
@@ -66,6 +66,7 @@ class MessageItem extends StatelessWidget {
     );
   }
 
+  @experimental
   Widget _buildTextMessageLeft(context) {
     return Align(
       alignment: Alignment.centerLeft,
@@ -104,17 +105,6 @@ class MessageItem extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildImageMessage(MessageAlignment messageAlignment) {
-    return Wrap(
-      alignment: messageAlignment == MessageAlignment.left
-          ? WrapAlignment.start
-          : WrapAlignment.end,
-      children: const [
-        Text("This is right message"),
-      ],
     );
   }
 

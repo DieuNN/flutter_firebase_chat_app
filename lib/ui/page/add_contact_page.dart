@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:chat_app/blocs/contact/contact_bloc.dart';
 import 'package:chat_app/constants/app_constants.dart';

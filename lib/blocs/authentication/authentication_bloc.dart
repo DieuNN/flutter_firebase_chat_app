@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:chat_app/firebase_extensions/firebase_authentication.dart';
-import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
-import 'package:chat_app/firebase_extensions/firebase_storage.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_authentication.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_firestore.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_storage.dart';
 import 'package:chat_app/model/enum/social_login_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

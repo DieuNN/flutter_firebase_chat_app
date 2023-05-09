@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:developer' as dart_dev;
-import 'dart:math' as dart_math;
 
 import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
 import 'package:chat_app/blocs/message/message_bloc.dart';
@@ -128,7 +127,7 @@ class _ConversationPageState extends State<ConversationPage> {
         imageUrl: conversationImage,
       ),
       title: Text(
-        conversationName ?? "User",
+        conversationName,
         style: const TextStyle(color: Colors.white),
         maxLines: 1,
         overflow: TextOverflow.fade,

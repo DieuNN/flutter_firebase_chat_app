@@ -1,6 +1,6 @@
-import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
+
+import 'package:chat_app/extensions/firebase_extensions/firebase_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 extension FirebaseAuthenticationExtensions on FirebaseAuth {

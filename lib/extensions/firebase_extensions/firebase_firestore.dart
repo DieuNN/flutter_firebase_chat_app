@@ -1,14 +1,14 @@
 import 'dart:developer';
-import 'dart:io';
 
-import 'package:chat_app/firebase_extensions/firebase_storage.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_storage.dart';
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/model/entity/message_content.dart';
 import 'package:chat_app/model/enum/message_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import '../model/entity/user.dart' as model;
+import 'package:meta/meta.dart';
+import '/model/entity/user.dart' as model;
 
 extension FirebaseFirestoreExtensions on FirebaseFirestore {
   static final CollectionReference _userCollection =
@@ -325,6 +325,7 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
     }
   }
 
+  @experimental
   static Future<void> _sendTextMessage({
     required String conversationUid,
     required MessageContent content,

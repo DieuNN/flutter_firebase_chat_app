@@ -4,14 +4,11 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
-import 'package:chat_app/firebase_extensions/firebase_messaging.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_firestore.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_messaging.dart';
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/model/entity/message_content.dart';
-import 'package:chat_app/model/enum/message_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:meta/meta.dart';
 
 part 'message_event.dart';

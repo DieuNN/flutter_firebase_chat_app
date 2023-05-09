@@ -1,8 +1,6 @@
-import 'dart:developer';
 
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/model/entity/user.dart';
-import 'package:chat_app/ui/widget/chat_page/conversation_item.dart';
 import 'package:chat_app/ui/widget/common/user_avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';

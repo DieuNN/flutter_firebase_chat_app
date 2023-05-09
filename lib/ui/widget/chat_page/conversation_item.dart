@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/ui/widget/common/user_avatar.dart';
@@ -55,7 +54,7 @@ class ConversationItem extends StatelessWidget {
       splashColor: Colors.transparent,
       leading: UserCircleAvatar(imageUrl: conversationImage),
       title: Text(
-        conversationName ?? "",
+        conversationName,
         style: const TextStyle(
           color: Colors.white,
           fontSize: 18,

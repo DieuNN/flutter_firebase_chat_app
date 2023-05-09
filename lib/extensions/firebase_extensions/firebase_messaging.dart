@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
-import 'package:chat_app/firebase_extensions/firebase_app.dart';
-import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_app.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_firestore.dart';
 import 'package:chat_app/main.dart';
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:firebase_auth/firebase_auth.dart';

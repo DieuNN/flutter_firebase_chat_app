@@ -49,7 +49,7 @@ class _ChatPageState extends State<ChatPage> {
                 searchEditingController: searchController,
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             SizedBox(
               height: 56,width: 56,
               child: Center(

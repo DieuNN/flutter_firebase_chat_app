@@ -1,4 +1,4 @@
-import 'package:chat_app/extensions/extensions.dart';
+import 'package:chat_app/extensions/color_extensions.dart';
 import 'package:flutter/material.dart';
 
 class AppConstants {

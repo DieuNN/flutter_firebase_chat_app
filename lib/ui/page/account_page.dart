@@ -1,9 +1,8 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:chat_app/blocs/authentication/authentication_bloc.dart';
 import 'package:chat_app/constants/app_constants.dart';
-import 'package:chat_app/firebase_extensions/firebase_authentication.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_authentication.dart';
 import 'package:chat_app/ui/widget/common/form_input_field.dart';
 import 'package:chat_app/ui/widget/common/user_avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';

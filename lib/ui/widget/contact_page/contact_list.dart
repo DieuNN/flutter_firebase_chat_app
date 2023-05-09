@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:chat_app/blocs/contact/contact_bloc.dart';
 import 'package:chat_app/model/entity/user.dart';

@@ -4,7 +4,6 @@ import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
 import 'package:chat_app/model/entity/conversation.dart';
 import 'package:chat_app/ui/widget/chat_page/conversation_item.dart';
 import 'package:chat_app/ui/widget/chat_page/no_conversation_widget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

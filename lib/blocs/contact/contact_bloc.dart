@@ -1,9 +1,8 @@
-import 'dart:async';
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:chat_app/firebase_extensions/firebase_firestore.dart';
+import 'package:chat_app/extensions/firebase_extensions/firebase_firestore.dart';
 import 'package:chat_app/model/entity/user.dart' as model;
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:meta/meta.dart';
