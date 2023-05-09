@@ -6,6 +6,7 @@ import 'package:chat_app/blocs/contact/contact_bloc.dart';
 import 'package:chat_app/blocs/conversation/conversation_bloc.dart';
 import 'package:chat_app/blocs/message/message_bloc.dart';
 import 'package:chat_app/blocs/pages/page_bloc.dart';
+import 'package:chat_app/firebase_extensions/firebase_app.dart';
 import 'package:chat_app/firebase_extensions/firebase_messaging.dart';
 import 'package:chat_app/ui/page/add_contact_page.dart';
 import 'package:chat_app/ui/page/message_page.dart';
@@ -14,12 +15,21 @@ import 'package:chat_app/ui/page/login_page.dart';
 import 'package:chat_app/ui/page/sign_up_page.dart';
 import 'package:chat_app/utils/animated_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 final appKey = GlobalKey<NavigatorState>();
+
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await FirebaseAppExtensions.ensureInitialized();
+  FirebaseMessagingExtensions.showNotification(
+      title: message.data['title'], message: message.data['message']);
+}
+
 
 void main() async {
   var binding = WidgetsFlutterBinding.ensureInitialized();

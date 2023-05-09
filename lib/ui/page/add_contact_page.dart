@@ -71,6 +71,7 @@ class _AddContactPageState extends State<AddContactPage> {
               }
             });
           }
+
           if (state is AddContactSuccessState) {
             Fluttertoast.showToast(msg: "Contact added");
             Navigator.pop(context);

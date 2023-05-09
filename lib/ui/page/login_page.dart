@@ -129,7 +129,6 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildLoginForm() {
     final formKey = GlobalKey<FormState>();
     return SizedBox(
-      height: 400,
       child: Padding(
         padding: const EdgeInsets.only(left: 16, right: 16),
         child: DecoratedBox(

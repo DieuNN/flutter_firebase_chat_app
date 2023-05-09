@@ -1,22 +1,23 @@
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:chat_app/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 extension FirebaseAppExtensions on FirebaseApp {
   static Future<void> ensureInitialized() async {
-    if (Firebase.apps.isNotEmpty) {
-      return;
-    }
-
     if (kIsWeb) {
       await _initFirebaseWebApp();
-      return;
+       return ;
     }
 
     await _initFirebaseMobileApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
+
 
   static Future<void> _initFirebaseMobileApp() async {
     await Firebase.initializeApp();
