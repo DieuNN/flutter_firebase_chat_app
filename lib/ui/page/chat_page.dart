@@ -45,37 +45,35 @@ class _ChatPageState extends State<ChatPage> {
         child: Row(
           children: [
             Expanded(
-              flex: 15,
               child: UserSearchField(
                 searchEditingController: searchController,
               ),
             ),
-            Expanded(
-              flex: 1,
-              child: Container(),
-            ),
-            Expanded(
-              flex: 3,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed("/add_contact",
-                      arguments: {"text": searchController.text});
-                },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(56),
-                  backgroundColor: AppConstants.secondaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    return Icon(
-                      Icons.add,
-                      color: Colors.white,
-                      size: constraints.maxHeight * 0.5,
-                    );
+            SizedBox(width: 8),
+            SizedBox(
+              height: 56,width: 56,
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed("/add_contact",
+                        arguments: {"text": searchController.text});
                   },
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                    backgroundColor: AppConstants.secondaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: LayoutBuilder(
+                    builder: (BuildContext context, BoxConstraints constraints) {
+                      return Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: constraints.maxHeight * 0.5,
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

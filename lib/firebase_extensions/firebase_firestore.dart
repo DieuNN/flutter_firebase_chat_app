@@ -24,9 +24,7 @@ extension FirebaseFirestoreExtensions on FirebaseFirestore {
     final updateValue = profilePicture == null
         ? {"name": name, "email": email}
         : {"name": name, "email": email, "photoUrl": profilePicture};
-    return await _userCollection.doc(uid).update({
-      "photoUrl": profilePicture,
-    });
+    return await _userCollection.doc(uid).update(updateValue);
   }
 
   static Future<void> initUserData(

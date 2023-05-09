@@ -36,7 +36,7 @@ extension FirebaseMessagingExtensions on FirebaseMessaging {
       showNotification(
           title: event.data['title'], message: event.data['message']);
     });
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   }
 
   static Future<void> _initLocalMessaging() async {
@@ -121,8 +121,4 @@ extension FirebaseMessagingExtensions on FirebaseMessaging {
   }
 }
 
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await FirebaseAppExtensions.ensureInitialized();
-  FirebaseMessagingExtensions.showNotification(
-      title: message.data['title'], message: message.data['message']);
-}
+

@@ -19,6 +19,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     on<AppInitialEvent>((event, emit) async {
       emit(AppInitializingState());
       try {
+
         await FirebaseAppExtensions.ensureInitialized();
         await FirebaseMessagingExtensions.initFirebaseMessaging();
         User? user = FirebaseAuth.instance.currentUser;

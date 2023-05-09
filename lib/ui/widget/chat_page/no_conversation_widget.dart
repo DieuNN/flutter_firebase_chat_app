@@ -14,12 +14,16 @@ class NoConversationWidget extends StatelessWidget {
             "assets/images/app_logo.png",
             width: MediaQuery.of(context).size.width / 2,
           ),
-          const Text(
-            "There's no conversation to show now. Let's make friends!",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
+          const Center(
+            child: Text(
+              "There's no conversation to show now. Let's make friends!",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
