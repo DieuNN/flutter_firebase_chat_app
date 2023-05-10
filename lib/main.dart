@@ -8,6 +8,7 @@ import 'package:chat_app/blocs/pages/page_bloc.dart';
 import 'package:chat_app/extensions/firebase_extensions/firebase_app.dart';
 import 'package:chat_app/extensions/firebase_extensions/firebase_messaging.dart';
 import 'package:chat_app/ui/page/add_contact_page.dart';
+import 'package:chat_app/ui/page/forgot_password_page.dart';
 import 'package:chat_app/ui/page/message_page.dart';
 import 'package:chat_app/ui/page/home_page.dart';
 import 'package:chat_app/ui/page/login_page.dart';
@@ -111,6 +112,9 @@ class ChatApp extends StatelessWidget {
                   return AnimatedRoute.createSlidingUpRoute(
                     ConversationPage(args: arguments),
                   );
+                }
+                if (settings.name == "/forgot_password") {
+                  return AnimatedRoute.createSlidingUpRoute(const ForgotPasswordPage());
                 }
                 // Unknown route
                 return AnimatedRoute.createSlidingUpRoute(HomePage());

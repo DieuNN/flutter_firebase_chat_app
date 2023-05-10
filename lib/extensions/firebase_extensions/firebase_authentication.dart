@@ -78,4 +78,8 @@ extension FirebaseAuthenticationExtensions on FirebaseAuth {
       await FirebaseAuth.instance.currentUser!.updatePhotoURL(profileUrl);
     }
   }
+
+  static Future<void> forgetPasswordByEmail({required String email}) async {
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+  }
 }
