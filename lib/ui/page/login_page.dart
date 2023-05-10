@@ -227,12 +227,16 @@ class _LoginPageState extends State<LoginPage> {
                 fontSize: 18,
               ),
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed("/forgot_password");
+            },
           )
         ],
       ),
     );
   }
+
+
 
   _buildLoginWithEmailButton(GlobalKey<FormState> formKey) {
     return Padding(

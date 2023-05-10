@@ -111,5 +111,18 @@ class AuthenticationBloc
         log(e.toString());
       }
     }, transformer: sequential());
+
+    on<StartForgetPasswordEvent>((event, emit) async {
+      final email = event.email;
+      try {
+        emit(ForgetPasswordInProgressState());
+        await FirebaseAuthenticationExtensions.forgetPasswordByEmail(
+            email: email);
+        emit(ForgetPasswordSuccessState());
+      } catch (e) {
+        log(e.toString());
+        emit(ForgetPasswordFailureState(errorMessage: e.toString()));
+      }
+    }, transformer: sequential());
   }
 }

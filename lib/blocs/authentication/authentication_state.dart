@@ -44,3 +44,14 @@ class UpdateAccountFailureState extends AuthenticationState {
 
   UpdateAccountFailureState({required this.errorMessage});
 }
+
+class ForgetPasswordInProgressState extends AuthenticationState {
+}
+
+class ForgetPasswordSuccessState extends AuthenticationState {}
+
+class ForgetPasswordFailureState extends AuthenticationState {
+  final String? errorMessage;
+
+  ForgetPasswordFailureState({this.errorMessage});
+}

@@ -35,3 +35,9 @@ class StartUpdateAccountEvent extends AuthenticationEvent {
       required this.email,
       required this.password});
 }
+
+class StartForgetPasswordEvent extends AuthenticationEvent {
+  final String email;
+
+  StartForgetPasswordEvent({required this.email});
+}
